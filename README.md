@@ -36,11 +36,9 @@ usage: nextalbums.py [-h] [-c COUNT] [-r] [-o] [--csv]
 Get the Next Albums to listen to.
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -c COUNT, --count COUNT
-                        Changes the number of albums to return. Default is 10.
-  -r, --random          Chooses random albums instead of listing
-                        chronologically.
+  -h, --help                show this help message and exit
+  -c COUNT, --count COUNT   Changes the number of albums to return. Default is 10.
+  -r, --random          Chooses random albums instead of listing chronologically.
   -o, --open            Open the cell that corresponds to the next album in
                         the spreadsheet online. Ignored if choosing randomly.
   --csv                 Generates a CSV file without any scores/'listened on'
