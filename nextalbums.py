@@ -152,6 +152,6 @@ if __name__ == "__main__":
 
         if open_in_browser and not choose_random:
             webbrowser.open(
-                "https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range&range=A{2}"
+                "https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
                 .format(spreadsheetId, pageId, link_range), new=2)
         print(p_table)
