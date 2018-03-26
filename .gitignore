@@ -1,0 +1,16 @@
+# Mac
+*.DS_Store
+
+# Emacs
+*~
+.[#]*[#]
+[#]*[#]
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Project
+/client_secret.json
+/src/scripts
