@@ -11,8 +11,7 @@ The most accurate will be the one in root directory: `spreadsheets.csv`, the one
 
 * [1001 Albums You Must Hear Before You Die](https://en.wikipedia.org/wiki/1001_Albums_You_Must_Hear_Before_You_Die). I attempted to include any albums that have ever been in the book, multiple versions with different lineups have come out in 2005, 2008, 2010, 2011, and 2016.
 
-* [Rolling Stone's 500 Greatest Albums of All Time
-](https://en.wikipedia.org/wiki/Rolling_Stone%27s_500_Greatest_Albums_of_All_Time). Likewise, the count here is 516, due to multiple versions.
+* [Rolling Stone's 500 Greatest Albums of All Time](https://en.wikipedia.org/wiki/Rolling_Stone%27s_500_Greatest_Albums_of_All_Time). Likewise, the count here is 516, due to multiple versions.
 
 * Wins from the four big [AMA](https://en.wikipedia.org/wiki/American_Music_Award) Categories relating to albums: 
     * [Favorite Pop/Rock Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Pop/Rock_Album)
@@ -20,7 +19,7 @@ The most accurate will be the one in root directory: `spreadsheets.csv`, the one
     * [Favorite Country Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Country_Album)
     * [Favorite Rap/Hip-Hop Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Rap/Hip-Hop_Album)
 
-* Wins from a multitude (though not all) Grammy Awards, listed [here](https://github.com/seanbrecke/albums/tree/master/src/Grammy).
+* Wins from a multitude (though not all) Grammy Awards, sources [here](https://github.com/seanbrecke/albums/tree/master/src/Grammy).
 
 Both the AMA and Grammy directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file. 
 
