@@ -21,7 +21,7 @@ The most accurate will be the one in root directory: `spreadsheets.csv`, the one
 
 * Wins from a multitude (though not all) Grammy Awards, sources [here](https://github.com/seanbrecke/albums/tree/master/src/Grammy).
 
-Both the AMA and Grammy directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file. 
+Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Grammy](https://github.com/seanbrecke/albums/tree/master/src/Grammy) directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file. 
 
 ###### `nextalbums.py`
 
