@@ -14,6 +14,9 @@ import textwrap
 
 from prettytable import PrettyTable
 
+#  Note: Since tools.run_flow() uses command line arguments, when initializing credentials,
+#  don't provide any command line arguments.
+
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/sheets.googleapis.com-python-nextalbums.json
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
@@ -77,7 +80,7 @@ def get_credentials():
     If nothing has been stored, or if the stored credentials are invalid,
     the OAuth2 flow is completed to obtain the new credentials.
 
-    Note: Since tools.run_flow() uses argparse, when initializing credentails,
+    Note: Since tools.run_flow() uses command line arguments, when initializing credentials,
     don't provide any command line arguments.
 
     Returns:
