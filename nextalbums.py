@@ -77,6 +77,9 @@ def get_credentials():
     If nothing has been stored, or if the stored credentials are invalid,
     the OAuth2 flow is completed to obtain the new credentials.
 
+    Note: Since tools.run_flow() uses argparse, when initializing credentails,
+    don't provide any command line arguments.
+
     Returns:
         Credentials, the obtained credential.
     """
@@ -91,6 +94,7 @@ def get_credentials():
     if not credentials or credentials.invalid:
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
+        credentials = tools.run_flow(flow, store)
     return credentials
 
 if __name__ == "__main__":
