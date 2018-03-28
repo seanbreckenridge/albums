@@ -23,6 +23,8 @@ The most accurate will be the one in root directory: `spreadsheets.csv`, the one
 
 Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Grammy](https://github.com/seanbrecke/albums/tree/master/src/Grammy) directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file. 
 
+The Year column refers to date released. However, in source `csv` files for Grammy/AMA, the year is often the date awarded. I correct these as I listen to them, so the most accurate for release date will always be `spreadsheet.csv`.
+
 ###### `nextalbums.py`
 
 A `python3.6` script used to interact with the sheets document and maintain `spreadsheets.csv`.
