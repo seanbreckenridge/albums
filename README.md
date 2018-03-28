@@ -13,19 +13,19 @@ The most accurate will be the one in root directory: `spreadsheets.csv`, the one
 
 * [Rolling Stone's 500 Greatest Albums of All Time](https://en.wikipedia.org/wiki/Rolling_Stone%27s_500_Greatest_Albums_of_All_Time). Likewise, the count here is 516, due to multiple versions.
 
-* Wins from the four big [AMA](https://en.wikipedia.org/wiki/American_Music_Award) Categories relating to albums: 
+* Wins from the four big [AMA](https://en.wikipedia.org/wiki/American_Music_Award) Categories relating to albums:
     * [Favorite Pop/Rock Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Pop/Rock_Album)
     * [Favorite Soul/R&B Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Soul/R%26B_Album)
     * [Favorite Country Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Country_Album)
     * [Favorite Rap/Hip-Hop Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Rap/Hip-Hop_Album)
 
-* Wins from a multitude (though not all) Grammy Awards, sources [here](https://github.com/seanbrecke/albums/tree/master/src/Grammy).
+* Wins from a multitude (though not all) Grammy Awards, listed [here](https://github.com/seanbrecke/albums/tree/master/src/Grammy).
 
-Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Grammy](https://github.com/seanbrecke/albums/tree/master/src/Grammy) directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file. 
+Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Grammy](https://github.com/seanbrecke/albums/tree/master/src/Grammy) directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file.
 
 The 'Year' column refers to date released. However, in source `csv` files for Grammy/AMA, the year is often the date awarded. I correct these as I listen to them in `spreadsheet.csv`.
 
-###### `nextalbums.py`
+##### `nextalbums.py`
 
 A `python3.6` script used to interact with the sheets document and maintain `spreadsheets.csv`.
 
@@ -33,24 +33,30 @@ Dependencies: `pip3 install --upgrade google-api-python-client prettytable`
 
 Setup: Run `python3 setup.py` to setup the OAuth2 client credentials.
 
-Usage:
+Help:
 
 ```
-usage: nextalbums.py [-h] [-c COUNT] [-r] [-o] [--csv]
+usage: Next Albums [-h] [-c COUNT] [-r] [-o] [-q] [--csv]
 
-Get the Next Albums to listen to.
+List the Next Albums to listen to.
 
 optional arguments:
-  -h, --help                show this help message and exit
-  -c COUNT, --count COUNT   Changes the number of albums to return. Default is 10.
-  -r, --random              Chooses random albums instead of listing chronologically.
-  -o, --open                Open the cell that corresponds to the next album in
-                            the spreadsheet online. Ignored if choosing randomly.
-  --csv                     Generates a CSV file without any scores/'listened on'
-                            dates.
+  -h, --help               show this help message and exit
+  -c COUNT, --count COUNT  Changes the number of albums to return. Default is
+                           10.
+  -r, --random             Chooses random albums instead of listing
+                           chronologically.
+  -o, --open               Open the cell that corresponds to the next album in
+                           the spreadsheet online. Ignored if choosing
+                           randomly.
+  -q, --quiet              quiet mode - only print errors.
+  --csv                    Generates a CSV file without any scores/'listened
+                           on' dates.
 ```
 
-For example, to return the next 7 albums to listen to (chronologically), and open the cell that corresponds to <i>September of My Years</i> in a web browser:
+###### Examples:
+
+Return the next 7 albums to listen to (chronologically), and open the cell that corresponds to <i>September of My Years</i> in a web browser:
 ```
 $ python3.6 nextalbums.py -oc 7
 +----------------------------+----------------+------+
@@ -64,6 +70,21 @@ $ python3.6 nextalbums.py -oc 7
 | Goin' Out of My Head       | Wes Montgomery | 1967 |
 | Caetano Veloso             | Caetano Veloso | 1968 |
 +----------------------------+----------------+------+
+```
+Print 3 random albums to listen to:
+```
+$ python3.6 nextalbums.py -rc 3
++--------------------+------------+------+
+| Album              | Artist     | Year |
++--------------------+------------+------+
+| Unorthodox Jukebox | Bruno Mars | 2014 |
+| In the Lonely Hour | Sam Smith  | 2015 |
+| Blues Singer       | Buddy Guy  | 2004 |
++--------------------+------------+------+
+```
+Don't print anything and open the cell that corresponds to the next album to listen to in a web browser.
+```
+$ python3.6 nextalbums.py -qo
 ```
 
 [Basic tutorial for Google Sheets API](https://developers.google.com/sheets/api/quickstart/python).
