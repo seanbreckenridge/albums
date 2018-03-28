@@ -146,7 +146,7 @@ if __name__ == "__main__":
                     p_table.add_row(format_for_table(not_listened_to[index][1]))
 
         if open_in_browser and not choose_random:
-            webbrowser.open(
+            webbrowser.open_new_tab(
                 "https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
-                .format(spreadsheetId, pageId, link_range), new=2)
+                .format(spreadsheetId, pageId, link_range))
         print(p_table)
