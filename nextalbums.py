@@ -14,9 +14,6 @@ import textwrap
 
 from prettytable import PrettyTable
 
-#  Note: Since tools.run_flow() uses command line arguments, when initializing credentials,
-#  don't provide any command line arguments.
-
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/sheets.googleapis.com-python-nextalbums.json
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
@@ -78,26 +75,24 @@ def get_credentials():
     """Gets valid user credentials from storage.
 
     If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Note: Since tools.run_flow() uses command line arguments, when initializing credentials,
-    don't provide any command line arguments.
+    exits, and tells user to run setup script.
 
     Returns:
         Credentials, the obtained credential.
     """
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
+    credential_dir = os.path.join(os.path.expanduser('~'), '.credentials')
     if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
+        print('Credentials have not been setup properly. Run setup.py')
+        exit(2)
     credential_path = os.path.join(
                 credential_dir, 'sheets.googleapis.com-python-nextalbums.json')
     store = Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        credentials = tools.run_flow(flow, store)
+        print('Credentials have not been setup properly. Run setup.py.\n' +
+        'If the problem persists, delete {0} and run setup.py again.'.format(
+        credential_path))
+        exit(2)
     return credentials
 
 if __name__ == "__main__":
