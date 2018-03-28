@@ -25,8 +25,8 @@ def format_for_table(r):
     """Formats a row for the table, breaking the text into multiple lines if its above 25 characters in length."""
     return ["\n".join(wrapper.wrap(x)) for x in r]
 
-def parse():
-    """does argparsing"""
+def parse_command_line_args():
+    """Parses arguments from user and exits if count is not valid."""
     parser = argparse.ArgumentParser(
         description="Get the Next Albums to listen to.")
     parser.add_argument("-c", "--count", type=int,
@@ -45,14 +45,12 @@ def parse():
                         "any scores/'listened on' dates.")
     args = parser.parse_args()
     if args.count is None:
-        count = 10
+        args.count = 10
     else:
-        if args.count > 0:
-            count = args.count
-        else:
+        if args.count < 1:
             print("Count must be bigger than 0.", file=stderr)
             exit(1)
-    return count, args.random, args.open, args.csv
+    return args.count, args.random, args.open, args.csv
 
 def csv_and_exit(values):
     """Generates a CSV File with order:
@@ -97,7 +95,7 @@ def get_credentials():
 
 if __name__ == "__main__":
 
-    count, choose_random, open_in_browser, make_csv = parse()
+    count, choose_random, open_in_browser, make_csv = parse_command_line_args()
 
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
