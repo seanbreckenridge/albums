@@ -7,7 +7,7 @@ from oauth2client.file import Storage
 import os
 import argparse
 from random import randint
-from sys import exit, stderr
+import sys
 import webbrowser
 import csv
 import textwrap
@@ -26,14 +26,18 @@ CSV_OUTPUT_FILE = 'spreadsheet.csv'
 
 wrapper = textwrap.TextWrapper(width=44, drop_whitespace=True, placeholder="...", max_lines=3)
 
+
 def format_for_table(r):
     """Formats a row for the table, breaking the text into multiple lines if its above 25 characters in length."""
     return ["\n".join(wrapper.wrap(x)) for x in r]
 
+
 def parse_command_line_args():
     """Parses arguments from user and exits if count is not valid."""
     parser = argparse.ArgumentParser(
-        description="Get the Next Albums to listen to.")
+        prog='Next Albums',
+        description="List the Next Albums to listen to.",
+        formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
     parser.add_argument("-c", "--count", type=int,
                         help="Changes the number of albums to return." +
                         " Default is 10.")
@@ -45,17 +49,25 @@ def parse_command_line_args():
                         "to the next album in the " +
                         "spreadsheet online. " +
                         "Ignored if choosing randomly.")
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="quiet mode - only print errors.")
     parser.add_argument("--csv", action="store_true",
                         help="Generates a CSV file without " +
                         "any scores/'listened on' dates.")
     args = parser.parse_args()
+    #  make sure count is valid
     if args.count is None:
         args.count = 10
     else:
         if args.count < 1:
-            print("Count must be bigger than 0.", file=stderr)
-            exit(1)
+            print("Count must be bigger than 0.", file=sys.stderr)
+            sys.exit(1)
+    # redirect stdout to os.devnull if quiet mode is activated:
+    if args.quiet:
+        sys.stdout = open(os.devnull, 'w')
+
     return args.count, args.random, args.open, args.csv
+
 
 def csv_and_exit(values):
     """Generates a CSV File with order:
@@ -64,26 +76,29 @@ def csv_and_exit(values):
     Exits the program after completion.
     """
 
-    csv_dir = os.path.dirname(__file__) # directory nextalbums module was loaded
+    csv_dir = os.path.dirname(__file__)  # directory nextalbums module was loaded
     csv_fullpath = os.path.join(csv_dir, CSV_OUTPUT_FILE)
     if os.path.exists(csv_fullpath):
         try:
-            user_response = input(f"{csv_fullpath} already exists, overwrite it? ").strip()
+            print(f"{csv_fullpath} already exists, overwrite it?", end=" ", file=sys.stderr)
+            user_response = input().strip()
             if not strtobool(user_response):
-                exit(2)
+                sys.exit(2)
         except ValueError:
-            print("Could not interpret '{0}' as a response. \n".format(user_response) +
-            "True values are y, yes, t, true, on and 1; false values are n, no, f, false, off and 0.")
-            exit(2)
+            print(f"Could not interpret '{user_response}' as a response. \n" +
+                  "True values are y, yes, t, true, on and 1; false values are n, no, f, false, off and 0.",
+                  file=sys.stderr)
+            sys.exit(2)
     for row in values:
-        del row[3] # remove 'date listened on'
-    values = [row for row in values if not "manual" in row[-1].lower()]
+        del row[3]  # remove 'date listened on'
+    values = [row for row in values if "manual" not in row[-1].lower()]
     # some albums I added manually which have no reason to be here otherwise
     with open(csv_fullpath, 'w') as csv_file:
         csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
         for row in values:
             csv_writer.writerow(row)
-    exit(0)
+        print(f"Wrote to {csv_fullpath} successfully.")
+    sys.exit(0)
 
 
 def get_credentials():
@@ -97,17 +112,17 @@ def get_credentials():
     """
     credential_dir = os.path.join(os.path.expanduser('~'), '.credentials')
     if not os.path.exists(credential_dir):
-        print('Credentials have not been setup properly. Run setup.py')
-        exit(3)
+        print('Credentials have not been setup properly. Run setup.py', file=sys.stderr)
+        sys.exit(3)
     credential_path = os.path.join(
                 credential_dir, 'sheets.googleapis.com-python-nextalbums.json')
     store = Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
         print('Credentials have not been setup properly. Run setup.py.\n' +
-        'If the problem persists, delete {0} and run setup.py again.'.format(
-        credential_path))
-        exit(3)
+              'If the problem persists, delete {0} and run setup.py again.'.format(
+               credential_path), file=sys.stderr)
+        sys.exit(3)
     return credentials
 
 if __name__ == "__main__":
@@ -124,13 +139,13 @@ if __name__ == "__main__":
 
     rangeName = 'A1:D'
     if make_csv:
-        rangeName = 'B2:F'
+        rangeName = 'B2:F' # include reasons for being on spreadsheet
 
     result = service.spreadsheets().values().get(spreadsheetId=spreadsheetId, range=rangeName).execute()
     values = result.get('values', [])
 
     if not values:
-        print('No Values returned from Google API.')
+        print('No Values returned from Google API.', file=sys.stderr)
     else:
         if make_csv:
             csv_and_exit(values)
@@ -148,8 +163,7 @@ if __name__ == "__main__":
         if choose_random:  # random choice
             while count and not_listened_to:
                 p_table.add_row(format_for_table(
-                                not_listened_to.pop(
-                                randint(0, len(not_listened_to) - 1))[1]))
+                                not_listened_to.pop(randint(0, len(not_listened_to) - 1))[1]))
                 count -= 1
         else:  # chronological
             for index in range(count):
@@ -160,8 +174,8 @@ if __name__ == "__main__":
                         #  and the fact that sheets starts from 1 instead of 0.
                     p_table.add_row(format_for_table(not_listened_to[index][1]))
 
-        if open_in_browser and not choose_random:
-            webbrowser.open_new_tab(
-                "https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
-                .format(spreadsheetId, pageId, link_range))
+            if open_in_browser and not choose_random:
+                webbrowser.open_new_tab(
+                    "https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
+                    .format(spreadsheetId, pageId, link_range))
         print(p_table)
