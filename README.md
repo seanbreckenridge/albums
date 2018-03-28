@@ -50,7 +50,7 @@ optional arguments:
                             dates.
 ```
 
-For example, to return the next 7 albums to listen (chronologically), and open the cell that corresponds to <i>September of My Years</i> in a web browser:
+For example, to return the next 7 albums to listen to (chronologically), and open the cell that corresponds to <i>September of My Years</i> in a web browser:
 ```
 $ python3.6 nextalbums.py -oc 7
 +----------------------------+----------------+------+
