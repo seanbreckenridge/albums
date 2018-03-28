@@ -35,7 +35,7 @@ def format_for_table(r):
 def parse_command_line_args():
     """Parses arguments from user and exits if count is not valid."""
     parser = argparse.ArgumentParser(
-        prog='Next Albums',
+        prog='python3 nextalbums.py',
         description="List the Next Albums to listen to.",
         formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
     parser.add_argument("-c", "--count", type=int,

@@ -36,7 +36,7 @@ Setup: Run `python3 setup.py` to setup the OAuth2 client credentials.
 Help:
 
 ```
-usage: Next Albums [-h] [-c COUNT] [-r] [-o] [-q] [--csv]
+usage: python3 nextalbums.py [-h] [-c COUNT] [-r] [-o] [-q] [--csv]
 
 List the Next Albums to listen to.
 
@@ -58,7 +58,7 @@ optional arguments:
 
 Return the next 7 albums to listen to (chronologically), and open the cell that corresponds to <i>September of My Years</i> in a web browser:
 ```
-$ python3.6 nextalbums.py -oc 7
+$ python3 nextalbums.py -oc 7
 +----------------------------+----------------+------+
 | Album                      | Artist         | Year |
 +----------------------------+----------------+------+
@@ -73,7 +73,7 @@ $ python3.6 nextalbums.py -oc 7
 ```
 Print 3 random albums to listen to:
 ```
-$ python3.6 nextalbums.py -rc 3
+$ python3 nextalbums.py -rc 3
 +--------------------+------------+------+
 | Album              | Artist     | Year |
 +--------------------+------------+------+
@@ -84,7 +84,7 @@ $ python3.6 nextalbums.py -rc 3
 ```
 Don't print anything and open the cell that corresponds to the next album to listen to in a web browser.
 ```
-$ python3.6 nextalbums.py -qo
+$ python3 nextalbums.py -qo
 ```
 
 [Basic tutorial for Google Sheets API](https://developers.google.com/sheets/api/quickstart/python).
