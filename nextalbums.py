@@ -11,6 +11,7 @@ from sys import exit, stderr
 import webbrowser
 import csv
 import textwrap
+from distutils.util import strtobool
 
 from prettytable import PrettyTable
 
@@ -19,6 +20,10 @@ from prettytable import PrettyTable
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Next Albums'
+
+# location to save --csv output to.
+CSV_OUTPUT_FILE = 'spreadsheet.csv'
+
 wrapper = textwrap.TextWrapper(width=44, drop_whitespace=True, placeholder="...", max_lines=3)
 
 def format_for_table(r):
@@ -58,11 +63,23 @@ def csv_and_exit(values):
 
     Exits the program after completion.
     """
+
+    csv_dir = os.path.dirname(__file__) # directory nextalbums module was loaded
+    csv_fullpath = os.path.join(csv_dir, CSV_OUTPUT_FILE)
+    if os.path.exists(csv_fullpath):
+        try:
+            user_response = input(f"{csv_fullpath} already exists, overwrite it? ").strip()
+            if not strtobool(user_response):
+                exit(2)
+        except ValueError:
+            print("Could not interpret '{0}' as a response. \n".format(user_response) +
+            "True values are y, yes, t, true, on and 1; false values are n, no, f, false, off and 0.")
+            exit(2)
     for row in values:
         del row[3] # remove 'date listened on'
     values = [row for row in values if not "manual" in row[-1].lower()]
     # some albums I added manually which have no reason to be here otherwise
-    with open('spreadsheet.csv', 'w') as csv_file:
+    with open(csv_fullpath, 'w') as csv_file:
         csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
         for row in values:
             csv_writer.writerow(row)
@@ -81,7 +98,7 @@ def get_credentials():
     credential_dir = os.path.join(os.path.expanduser('~'), '.credentials')
     if not os.path.exists(credential_dir):
         print('Credentials have not been setup properly. Run setup.py')
-        exit(2)
+        exit(3)
     credential_path = os.path.join(
                 credential_dir, 'sheets.googleapis.com-python-nextalbums.json')
     store = Storage(credential_path)
@@ -90,7 +107,7 @@ def get_credentials():
         print('Credentials have not been setup properly. Run setup.py.\n' +
         'If the problem persists, delete {0} and run setup.py again.'.format(
         credential_path))
-        exit(2)
+        exit(3)
     return credentials
 
 if __name__ == "__main__":
