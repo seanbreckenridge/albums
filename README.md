@@ -23,7 +23,7 @@ The most accurate will be the one in root directory: `spreadsheets.csv`, the one
 
 Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Grammy](https://github.com/seanbrecke/albums/tree/master/src/Grammy) directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file. 
 
-The Year column refers to date released. However, in source `csv` files for Grammy/AMA, the year is often the date awarded. I correct these as I listen to them, so the most accurate for release date will always be `spreadsheet.csv`.
+The 'Year' column refers to date released. However, in source `csv` files for Grammy/AMA, the year is often the date awarded. I correct these as I listen to them in `spreadsheet.csv`.
 
 ###### `nextalbums.py`
 
@@ -31,6 +31,9 @@ A `python3.6` script used to interact with the sheets document and maintain `spr
 
 Dependencies: `pip3 install --upgrade google-api-python-client prettytable`
 
+Setup: Run `python3 setup.py` to setup the OAuth2 client credentials.
+
+Usage:
 
 ```
 usage: nextalbums.py [-h] [-c COUNT] [-r] [-o] [--csv]
@@ -47,20 +50,20 @@ optional arguments:
                             dates.
 ```
 
-For example, to return 7 random albums to listen to: 
+For example, to return the next 7 albums to listen (chronologically), and open the cell that corresponds to <i>September of My Years</i> in a web browser:
 ```
-$ python3.6 nextalbums.py -rc 7
-+------------------+------------------+------+
-| Album            | Artist           | Year |
-+------------------+------------------+------+
-| Mama's Gun       | Erykah Badu      | 2000 |
-| Bitte Orca       | Dirty Projects   | 2009 |
-| I Remember Miles | Shirley Horn     | 1999 |
-| Breathe          | Faith Hill       | 1999 |
-| Duets II         | Frank Sinatra    | 1996 |
-| The Hits         | Garth Brooks     | 1994 |
-| Resurrection     | Chris Pérez Band | 2000 |
-+------------------+------------------+------+
+$ python3.6 nextalbums.py -oc 7
++----------------------------+----------------+------+
+| Album                      | Artist         | Year |
++----------------------------+----------------+------+
+| September of My Years      | Frank Sinatra  | 1966 |
+| The In Crowd               | Ramsey Lewis   | 1966 |
+| The Return of Roger Miller | Roger Miller   | 1966 |
+| A Man and His Music        | Frank Sinatra  | 1967 |
+| Don't Come Home A-Drinkin' | Loretta Lynn   | 1967 |
+| Goin' Out of My Head       | Wes Montgomery | 1967 |
+| Caetano Veloso             | Caetano Veloso | 1968 |
++----------------------------+----------------+------+
 ```
 
 [Basic tutorial for Google Sheets API](https://developers.google.com/sheets/api/quickstart/python).
