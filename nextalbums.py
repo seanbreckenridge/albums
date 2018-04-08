@@ -5,12 +5,13 @@ from oauth2client import tools
 from oauth2client.file import Storage
 
 import os
-import argparse
-from random import randint
+import re
 import sys
-import webbrowser
 import csv
+import argparse
 import textwrap
+import webbrowser
+from random import randint
 from distutils.util import strtobool
 
 from prettytable import PrettyTable
@@ -91,15 +92,17 @@ def csv_and_exit(values):
             sys.exit(2)
     for row in values:
         del row[3]  # remove 'date listened on'
-    values = [row for row in values if "manual" not in row[-1].lower()]
-    # some albums I added manually which have no reason to be here otherwise
+
+    values = [row for row in values if not
+              set(map(lambda s: s.lower(), re.split("\s*,\s*", row[3])))
+              .issubset(set(["manual", "relation"]))]
+        # some albums I added manually which have no reason to be in the csv otherwise
     with open(csv_fullpath, 'w') as csv_file:
         csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
         for row in values:
             csv_writer.writerow(row)
         print(f"Wrote to {csv_fullpath} successfully.")
     sys.exit(0)
-
 
 def get_credentials():
     """Gets valid user credentials from storage.
@@ -139,7 +142,7 @@ if __name__ == "__main__":
 
     rangeName = 'A1:D'
     if make_csv:
-        rangeName = 'B2:F' # include reasons for being on spreadsheet
+        rangeName = 'B2:F'  # include reasons for being on spreadsheet
 
     result = service.spreadsheets().values().get(spreadsheetId=spreadsheetId, range=rangeName).execute()
     values = result.get('values', [])
