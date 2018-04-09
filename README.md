@@ -1,7 +1,7 @@
 ### albums
 A list of CSV files containing popular/acclaimed albums used to make a list of albums to listen to.
 
-This is a personal project of mine, but I thought I'd leave these CSV files up here in case anyone wanted to use them.
+This is a personal project of mine, but I thought I'd leave these files up here in case anyone wanted to use them.
 
 The files are bound to have errors in source files somewhere - duplicates due to slight differences in album names, these were scraped off a variety of websites.
 
