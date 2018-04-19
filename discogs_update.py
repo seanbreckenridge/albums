@@ -25,8 +25,8 @@ update_count = 0
 def discogs_token():
     """Load User-Agent and token from json file."""
     with open('discogs_token.json') as f:
-        discog_cred = load(f)
-    return discog_cred["user_agent"], discog_cred["token"]
+        discogs_cred = load(f)
+    return discogs_cred["user_agent"], discogs_cred["token"]
 
 
 def init_discogs_client():
@@ -36,16 +36,16 @@ def init_discogs_client():
     d_Client = discogs_client.Client(user_agent, user_token=token)
 
 
-def has_discog_link(row):
+def has_discogs_link(row):
     """Returns True/False based on whether the entry has a discogs link."""
     if len(row) >= 8:
         return bool(row[7].strip())
     return False
 
 
-def has_discog_data(row):
+def has_discogs_data(row):
     """Returns True if discogs data has been scraped for this entry before."""
-    if has_discog_link(row):
+    if has_discogs_link(row):
         return bool(''.join(map(str, row[8:])).strip())
     return False
 
@@ -54,18 +54,18 @@ def discogs_get(_type, id):
     """Gets data from discogs API."""
     global d_Client
     global update_count
+    print(f"[Discogs] Requesting {id}.")
     sleep(2)
     update_count += 1
-    print(f"[Discogs] Requesting {id}.")
     if _type == "master":  # if Master
         return d_Client.master(id).main_release
     elif _type == "release":
         return d_Client.release(id)
     else:
-        raise Excepion(f"Unknown discogs request {_type}")
+        raise Excepion(f"Unknown discogs request type: {_type}")
 
 
-def fix_discog_link(link):
+def fix_discogs_link(link):
     """Removes unnecessary parts of Discogs URLs"""
     urlparse_path = urlparse(link).path
     master_id = re.search("\/master\/(?:view\/)?(\d+)", urlparse_path)
@@ -95,7 +95,6 @@ def prompt_changes(old_row, new_row):
     for index, (old_item, new_item) in enumerate(zip(old_row, new_row)):
         if old_item is not None and len(old_item.strip()) != 0 \
                 and str(old_item).strip().lower() != str(new_item).strip().lower():
-            # if the difference between the years is greater than 1
             changes.append(f"'{old_item}' → '{new_item}'")
     if changes:
         print("\n".join([colored("CONFIRM CHANGES:", "red")] + changes), end="\n\n")
@@ -104,7 +103,7 @@ def prompt_changes(old_row, new_row):
         return True
 
 
-def update_row_with_discog_data(row):
+def update_row_with_discogs_data(row):
     """Gets values from discogs API and prompts the user to confirm changes."""
     global d_Client
     link = row[7]
@@ -116,7 +115,7 @@ def update_row_with_discog_data(row):
     row[1] = rel.title  # Album Name
     row[2] = fix_discogs_artist_name(rel.artists[0].name)  # Artist Name
     row[3] = rel.year  # Year
-    if row[3] == 0:  # discogs API returns 0 if year was unknown
+    if row[3] == 0:  # discogs API returns 0 if year was unknown for master release
         print(f"Warning: Failed to get year for {id}: {row[1]}. Using old year ({original_row[3]}).")
         row[3] = original_row[3]
     row[6] = '=IMAGE("{}")'.format(rel.images[0]["uri"])  # Image
@@ -131,7 +130,7 @@ def update_row_with_discog_data(row):
 
 
 def fix_rows(values):
-    """Error Handling; Calls 'update_row_with_discog_data' for entries that need to be updated."""
+    """Error Handling; Calls 'update_row_with_discogs_data' for entries that need to be updated."""
     global update_count
     header = values.pop(0)
     for index, row in enumerate(values):
@@ -139,18 +138,18 @@ def fix_rows(values):
         if update_count > update_threshold:  # if we've updated enough
             print("Hit update threshold; updating spreadsheet.")
             break
-        if has_discog_link(row):  # if this has a discogs link
-            row[7] = fix_discog_link(row[7])
-            if not has_discog_data(row):  # if this hasnt been updated with discogs data yet
+        if has_discogs_link(row):  # if this has a discogs link
+            row[7] = fix_discogs_link(row[7])
+            if not has_discogs_data(row):  # if this hasnt been updated with discogs data yet
                 try:
-                    row = update_row_with_discog_data(row)  # update it
+                    row = update_row_with_discogs_data(row)  # update it
                 except discogs_client.exceptions.HTTPError as discogs_api_limit:  # wait on 429
                     if '429' in str(discogs_client.exceptions.HTTPError):
                         wait_time = 30
                         print(f"[Discogs] API Limit Reached. Waiting {wait_time} seconds...")
                         sleep(wait_time)
                         try:
-                            row = update_row_with_discog_data(row)
+                            row = update_row_with_discogs_data(row)
                         except discogs_client.exceptions.HTTPError as second_error:
                             print(second_error)
                             break  # if an API error happened twice, leave the program
@@ -169,6 +168,7 @@ def get_values(credentials):
     http = credentials.authorize(httplib2.Http())
     discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?version=v4')
     service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
+    # valueRendorOption = FORMULA is needed so we can keep images. Cells are blank or else.
     result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range="A1:K", valueRenderOption="FORMULA").execute()
     return result.get('values', [])
 
@@ -179,16 +179,18 @@ def update_values(values, credentials):
     no_of_rows = len(values)
     update_data = [
         {
+            # Album, Artist, Year
             'range': "Music!B1:D{}".format(no_of_rows),
             'values': [vals[1:4] for vals in values]
         },
         {
+            # Album Artwork, Discogs Link, Genre, Style, Credits (ID)
             'range': "Music!G1:K{}".format(no_of_rows),
             'values': [vals[6:] for vals in values]
         }
     ]
     update_body = {
-        'valueInputOption': "USER_ENTERED",
+        'valueInputOption': "USER_ENTERED",  # to allow images to display
         'data': update_data
     }
     request = service.spreadsheets().values().batchUpdate(
