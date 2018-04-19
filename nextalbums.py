@@ -70,7 +70,7 @@ def parse_command_line_args():
 
 def csv_and_exit(values):
     """Generates a CSV File with order:
-    Album, Artist, Year, Awards
+    Album, Artist, Year, Awards, Discogs Link, Genre, Style, Credits (ID)
 
     Exits the program after completion.
     """
@@ -98,7 +98,8 @@ def csv_and_exit(values):
     with open(csv_fullpath, 'w') as csv_file:
         csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
         for row in values:
-            csv_writer.writerow(row)
+            # write '' to empty cells, to make all the row lengths in the csv file the same
+            csv_writer.writerow(list(chain(row, ['' for empty_cells in range(max(map(len, values)) - len(row))])))
         print(f"Wrote to {csv_fullpath} successfully.")
     sys.exit(0)
 
