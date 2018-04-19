@@ -1,5 +1,5 @@
 import httplib2
-from apiclient import discovery
+from googleapiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
@@ -13,19 +13,17 @@ import textwrap
 import webbrowser
 from random import randint
 from distutils.util import strtobool
+from itertools import chain
 
 from prettytable import PrettyTable
-
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/sheets.googleapis.com-python-nextalbums.json
-SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
-CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'Next Albums'
 
 # location to save --csv output to.
 CSV_OUTPUT_FILE = 'spreadsheet.csv'
 
-wrapper = textwrap.TextWrapper(width=44, drop_whitespace=True, placeholder="...", max_lines=3)
+spreadsheet_id = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
+pageId = '1451660661'
+
+wrapper = textwrap.TextWrapper(width=30, drop_whitespace=True, placeholder="...", max_lines=3)
 
 
 def format_for_table(r):
@@ -90,19 +88,20 @@ def csv_and_exit(values):
                   "True values are y, yes, t, true, on and 1; false values are n, no, f, false, off and 0.",
                   file=sys.stderr)
             sys.exit(2)
-    for row in values:
-        del row[3]  # remove 'date listened on'
+
+    values = list(list(chain(row[:3], [row[4]], row[6:])) for row in values)
 
     values = [row for row in values if not
               set(map(lambda s: s.lower(), re.split("\s*,\s*", row[3])))
-              .issubset(set(["manual", "relation"]))]
-        # some albums I added manually which have no reason to be in the csv otherwise
+              .issubset(set(["manual", "relation", "recommendation"]))]
+
     with open(csv_fullpath, 'w') as csv_file:
         csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
         for row in values:
             csv_writer.writerow(row)
         print(f"Wrote to {csv_fullpath} successfully.")
     sys.exit(0)
+
 
 def get_credentials():
     """Gets valid user credentials from storage.
@@ -137,14 +136,11 @@ if __name__ == "__main__":
     discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?version=v4')
     service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
 
-    spreadsheetId = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
-    pageId = '1451660661'
-
     rangeName = 'A1:D'
     if make_csv:
-        rangeName = 'B2:F'  # include reasons for being on spreadsheet
+        rangeName = 'B2:K'
 
-    result = service.spreadsheets().values().get(spreadsheetId=spreadsheetId, range=rangeName).execute()
+    result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=rangeName).execute()
     values = result.get('values', [])
 
     if not values:
@@ -180,5 +176,5 @@ if __name__ == "__main__":
             if open_in_browser and not choose_random:
                 webbrowser.open_new_tab(
                     "https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
-                    .format(spreadsheetId, pageId, link_range))
+                    .format(spreadsheet_id, pageId, link_range))
         print(p_table)
