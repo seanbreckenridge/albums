@@ -7,6 +7,8 @@ The files are bound to have errors in source files somewhere - duplicates due to
 
 The most accurate will be the one in root directory: `spreadsheets.csv`, the one I am currently using on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661).
 
+`python3 discogs_update.py` uses the Discogs API to validate the data in the spreadsheet.
+
 ##### Sources for `spreadsheet.csv`:
 
 * [1001 Albums You Must Hear Before You Die](https://en.wikipedia.org/wiki/1001_Albums_You_Must_Hear_Before_You_Die). I attempted to include any albums that have ever been in the book, multiple versions with different lineups have come out in 2005, 2008, 2010, 2011, and 2016.
