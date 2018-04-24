@@ -1,13 +1,13 @@
 ### albums
-A list of CSV files containing popular/acclaimed albums used to make a list of albums to listen to.
+A collection of csv files containing popular/acclaimed albums, used to make a inordinate list of albums to listen to.
 
 This is a personal project of mine, but I thought I'd leave these files up here in case anyone wanted to use them.
 
-The files are bound to have errors in source files somewhere - duplicates due to slight differences in album names, these were scraped off a variety of websites.
+The source csv files are bound to have errors somewhere, e.g. duplicates due to slight differences in album names.
 
-The most accurate will be the one in root directory: `spreadsheets.csv`, the one I am currently using on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661).
+The 'Year' column refers to date released. However, in source csv files for AMA's and Grammies, the year is often the date awarded.
 
-`python3 discogs_update.py` uses the Discogs API to validate the data in the spreadsheet.
+`python3 discogs_update.py` uses the [Discogs API](https://github.com/discogs/discogs_client) to validate the data in the spreadsheet, hence the most accurate file will be the one in root directory: `spreadsheets.csv`, a csv file generated from the information on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661).
 
 ##### Sources for `spreadsheet.csv`:
 
@@ -24,8 +24,6 @@ The most accurate will be the one in root directory: `spreadsheets.csv`, the one
 * Wins from a multitude (though not all) Grammy Awards, listed [here](https://github.com/seanbrecke/albums/tree/master/src/Grammy).
 
 Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Grammy](https://github.com/seanbrecke/albums/tree/master/src/Grammy) directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file.
-
-The 'Year' column refers to date released. However, in source `csv` files for Grammy/AMA, the year is often the date awarded. I correct these as I listen to them in `spreadsheet.csv`.
 
 ##### `nextalbums.py`
 
@@ -88,5 +86,3 @@ Don't print anything and open the cell that corresponds to the next album to lis
 ```
 $ python3 nextalbums.py -qo
 ```
-
-[Basic tutorial for Google Sheets API](https://developers.google.com/sheets/api/quickstart/python).
