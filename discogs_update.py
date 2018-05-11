@@ -11,6 +11,7 @@ from nextalbums import get_credentials
 import sys
 import re
 import traceback
+import argparse
 from urllib.parse import urlparse
 from json import load
 from time import sleep
@@ -19,6 +20,7 @@ spreadsheet_id = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
 d_Client = None
 update_threshold = 10   # ends the program and updates after these many updates
 update_count = 0
+attempt_to_resolve_to_master = False
 
 
 def discogs_token():
@@ -72,6 +74,7 @@ def discogs_get(_type, id):
 
 def fix_discogs_link(link):
     """Removes unnecessary parts of Discogs URLs"""
+    global attempt_to_resolve_to_master
     urlparse_path = urlparse(link).path
     master_id = re.search("\/master\/(?:view\/)?(\d+)", urlparse_path)
     if master_id:  # if we matched master id
@@ -79,15 +82,18 @@ def fix_discogs_link(link):
     else:  # if there is no master id
         release_id = master_id = re.search("\/release\/(?:view\/)?(\d+)", urlparse_path)
         if release_id:
-            release_match = release_id.groups()[0]
-            print(f"Attempting to resolve release {release_match} to master.")
-            rel = d_Client.release(int(release_match))
-            sleep(2)
-            if rel.master is not None:
-                print(f"Resolved release {release_match} to {rel.master.id}.")
-                return "https://www.discogs.com/master/{}".format(int(rel.master.id))
+            if attempt_to_resolve_to_master:
+                release_match = release_id.groups()[0]
+                print(f"Attempting to resolve release {release_match} to master.")
+                rel = d_Client.release(int(release_match))
+                sleep(2)
+                if rel.master is not None:
+                    print(f"Resolved release {release_match} to {rel.master.id}.")
+                    return "https://www.discogs.com/master/{}".format(int(rel.master.id))
+                else:
+                    return "https://www.discogs.com/release/{}".format(release_match)
             else:
-                return "https://www.discogs.com/release/{}".format(release_match)
+                return "https://www.discogs.com/release/{}".format(release_id.groups()[0])
         else:
             raise Exception(f"Unknown discogs link: {link}. Exiting...")
 
@@ -204,7 +210,7 @@ def get_values(credentials):
 
 def update_values(values, credentials):
     """Updates the values on the spreadsheet"""
-    # Uses batchUpdate instead of update since its difficult to format listened on from FORMULA valueRenderOption
+    # Uses batchUpdate instead of update since its difficult to format 'date listened on' from FORMULA valueRenderOption
     service = discovery.build('sheets', 'v4', credentials=credentials)
     no_of_rows = len(values)
     update_data = [
@@ -228,7 +234,18 @@ def update_values(values, credentials):
     return request.execute()
 
 
+def checkargs():
+    """Gets args from command line to determine whether or not to check if we should try to resolve releases to master"""
+    global attempt_to_resolve_to_master
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-r", "--resolve-to-master", action="store_true", default=False, help="Check each release to see if it has a master, and replace it with master if it exists.")
+    args = parser.parse_args()
+    if args.resolve_to_master:
+        attempt_to_resolve_to_master = True
+
+
 def main():
+    checkargs()
     init_discogs_client()
     credentials = get_credentials()
     values = get_values(credentials)
