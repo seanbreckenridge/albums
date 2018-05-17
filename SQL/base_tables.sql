@@ -3,7 +3,7 @@ CREATE SCHEMA `albums`;
 USE `albums`;
 
 CREATE TABLE `Album` (
-  `AlbumID` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `AlbumID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` varchar(256) NOT NULL,
   `CoverArtists` varchar(512) NOT NULL,
   `AlbumArtworkURL` varchar(2048) DEFAULT NULL,
@@ -15,15 +15,15 @@ CREATE TABLE `Album` (
 
 
 CREATE TABLE `Artist` (
-  `ArtistID` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `ArtistID` int(11) NOT NULL AUTO_INCREMENT,
   `DiscogsArtistURL` varchar(2048) DEFAULT NULL,
   `Name` varchar(256) DEFAULT NULL,
   PRIMARY KEY (`ArtistID`)
 ) ;
 
 CREATE TABLE `ArtistWorkedOnAlbum` (
-  `Album_AlbumID` BIGINT(20) NOT NULL,
-  `Artist_ArtistID` BIGINT(20) NOT NULL,
+  `Album_AlbumID` int(11) NOT NULL,
+  `Artist_ArtistID` int(11) NOT NULL,
   `Type` TINYINT(1) NOT NULL, -- 1 is a main artist, 0 is other
   KEY `Artist_Album_FK_idx` (`Album_AlbumID`),
   KEY `Artist_ArtistID_FK_idx` (`Artist_ArtistID`),
@@ -50,7 +50,7 @@ CREATE TABLE `Style` (
 );
 
 CREATE TABLE `AlbumGenre` (
-  `AlbumID` BIGINT(20) NOT NULL,
+  `AlbumID` int(11) NOT NULL,
   `GenreID` int(11) NOT NULL,
   KEY `AlbumGenre_Album_Genre_idx` (`AlbumID`),
   KEY `AlbumGenre_Genre_GenreID_idx` (`GenreID`),
@@ -59,7 +59,7 @@ CREATE TABLE `AlbumGenre` (
 );
 
 CREATE TABLE `AlbumReason` (
-  `AlbumID` BIGINT(20) NOT NULL,
+  `AlbumID` int(11) NOT NULL,
   `ReasonID` int(11) NOT NULL,
   KEY `Reason_Album_AlbumID_idx` (`AlbumID`),
   KEY `AlbumReason_Reason_ReasonID_idx` (`ReasonID`),
@@ -68,7 +68,7 @@ CREATE TABLE `AlbumReason` (
 );
 
 CREATE TABLE `AlbumStyle` (
-  `AlbumID` BIGINT(20) NOT NULL,
+  `AlbumID` int(11) NOT NULL,
   `StyleID` int(11) NOT NULL,
   KEY `AlbumStyle_Album_AlbumID_idx` (`AlbumID`),
   KEY `AlbumStyle_Style_StyleID_idx` (`StyleID`),
