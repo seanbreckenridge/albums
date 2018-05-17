@@ -5,6 +5,7 @@ from oauth2client.file import Storage
 from googleapiclient import discovery
 import discogs_client
 from distutils.util import strtobool
+from termcolor import colored
 
 from nextalbums import get_credentials
 
@@ -21,19 +22,20 @@ d_Client = None
 update_threshold = 10   # ends the program and updates after these many updates
 update_count = 0
 attempt_to_resolve_to_master = False
+token_filename = "discogs_token.json"
 
 
-def discogs_token():
+def discogs_token(filename):
     """Load User-Agent and token from json file."""
-    with open('discogs_token.json') as f:
+    with open(filename) as f:
         discogs_cred = load(f)
     return discogs_cred["user_agent"], discogs_cred["token"]
 
 
-def init_discogs_client():
+def init_discogs_client(filename):
     """Initialize the discogs API Client."""
     global d_Client
-    user_agent, token = discogs_token()
+    user_agent, token = discogs_token(filename)
     d_Client = discogs_client.Client(user_agent, user_token=token)
 
 
@@ -245,8 +247,10 @@ def checkargs():
 
 
 def main():
+    global d_Client
     checkargs()
-    init_discogs_client()
+    user_agent, token = discogs_token(token_filename)
+    d_Client = discogs_client.Client(user_agent, user_token=token)
     credentials = get_credentials()
     values = get_values(credentials)
     if len(values) == 0:
