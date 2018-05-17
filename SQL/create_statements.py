@@ -21,7 +21,6 @@ from time import sleep
 
 spreadsheet_id = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
 token_filename = path.join(path.normpath('..'), "discogs_token.json")
-database_name = "albums.db"
 tables_file = "base_tables.sql"
 output_file = "statements.sql"
 
@@ -168,18 +167,15 @@ class album:
         for main_id in main_artists.strip().split("|"):
             if main_id.strip():
                 if main_id not in artist_cache:
-                    self.main_artists.append(main_id)
                     artist_cache.get(main_id)  # download name so we can get it from cache later
-                else:
-                    self.main_artists.append(main_id)
+                self.main_artists.append(main_id)
+
         self.other_artists = []
         for other_id in credits.strip().split("|"):
             if other_id.strip():
                 if other_id not in artist_cache:
-                    self.other_artists.append(other_id)
                     artist_cache.get(other_id)  # download name so we can get it from cache later
-                else:
-                    self.other_artists.append(other_id)
+                self.other_artists.append(other_id)
 
 
 def get_values(credentials):
@@ -203,7 +199,7 @@ def main():
     genres_table = autoincrement_analog()
     styles_table = autoincrement_analog()
     credentials = get_credentials()
-    statements = []
+    statements = []  # SQL statements that would add data to the database
     values = get_values(credentials)
     if values is None:
         print("No values returned from Google API")
