@@ -31,12 +31,12 @@ reasons_table = None
 genres_table = None
 styles_table = None
 
+
 class autoincrement_analog:
     """class to manage a variable number of reasons/genres/styles, and connecting them to surrogate ids"""
 
     def __init__(self):
         self.keymap = {}
-
 
     def add(self, desc):
         """description (e.g. Rock/1001 Albums/Funk) to add to the list. Returns the ID this description belongs to"""
@@ -45,13 +45,12 @@ class autoincrement_analog:
             self.keymap[desc] = 1
             return self.keymap[desc]
         else:
-            if desc not in self.keymap.keys(): # if this isnt in the keymap yet
+            if desc not in self.keymap.keys():  # if this isnt in the keymap yet
                 new_index = max(list(self.keymap.values())) + 1
-                self.keymap[desc] = new_index # add it
+                self.keymap[desc] = new_index  # add it
                 return new_index
             else:
-                return self.keymap[desc] # if this was already here, return the index
-
+                return self.keymap[desc]  # if this was already here, return the index
 
     def add_comma_seperated_list(self, comma_seperated):
         return_ids = []
@@ -65,6 +64,7 @@ class autoincrement_analog:
                 return_ids.append(self.add(description.strip()))
         return return_ids
 
+
 class cache:
     """class to manage caching API requests for artist names"""
     def __init__(self):
@@ -76,7 +76,7 @@ class cache:
         with open(self.jsonpath, 'r') as js_f:
             try:
                 self.items = json.load(js_f)
-            except json.JSONDecodeError: # file is empty or broken
+            except json.JSONDecodeError:  # file is empty or broken
                 self.items = {}
 
     def update_json_file(self):
@@ -99,7 +99,7 @@ class cache:
         return str(id) in self.items
 
     def get(self, id):
-        if str(id) == "194": # Various Artists; this doesnt have a page on discogs, its just a placeholder
+        if str(id) == "194":  # Various Artists; this doesnt have a page on discogs, its just a placeholder
             self.items["194"] = "Various"
             return self.items["194"]
         if self.__contains__(id):
@@ -112,6 +112,7 @@ class cache:
     def __iter__(self):
         return self.items.__iter__()
 
+
 def escape_apostrophes(input_str):
     """Escapes strings for SQL insert statements"""
     if "'" in input_str:
@@ -119,9 +120,11 @@ def escape_apostrophes(input_str):
     else:
         return input_str
 
+
 def quote(input_str):
     """Adds single quotes around a string"""
     return "'{}'".format(input_str)
+
 
 class album:
     """data for each album"""
@@ -137,7 +140,7 @@ class album:
             discogs_url, main_artists, genres, styles, credits = map(str, vals)
         try:
             self.score = float(score)
-        except: # could be empty or 'can't find'
+        except:  # could be empty or 'can't find'
             self.score = None
         self.album_name = album_name
         self.cover_artist = artists_on_album_cover
@@ -145,7 +148,8 @@ class album:
         if date.strip():
             self.listened_on = xlrd.xldate_as_datetime(int(date), 0)
             self.listened_on = "{year}-{month}-{day}".format(year=self.listened_on.year,
-                    month=self.listened_on.month, day=self.listened_on.day)
+                                                             month=self.listened_on.month,
+                                                             day=self.listened_on.day)
         else:
             self.listened_on = None
         self.album_artwork = re.search("https?:\/\/[^\"]+", album_artwork)
@@ -165,7 +169,7 @@ class album:
             if main_id.strip():
                 if main_id not in artist_cache:
                     self.main_artists.append(main_id)
-                    artist_cache.get(main_id) # download name so we can get it from cache later
+                    artist_cache.get(main_id)  # download name so we can get it from cache later
                 else:
                     self.main_artists.append(main_id)
         self.other_artists = []
@@ -173,11 +177,9 @@ class album:
             if other_id.strip():
                 if other_id not in artist_cache:
                     self.other_artists.append(other_id)
-                    artist_cache.get(other_id) # download name so we can get it from cache later
+                    artist_cache.get(other_id)  # download name so we can get it from cache later
                 else:
                     self.other_artists.append(other_id)
-
-
 
 
 def get_values(credentials):
@@ -186,6 +188,7 @@ def get_values(credentials):
     service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
     result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range="A1:L", valueRenderOption="FORMULA").execute()
     return result.get("values", [])
+
 
 def main():
     global artist_cache
@@ -214,7 +217,7 @@ def main():
 
     for index, artist in enumerate(iter(artist_cache), 1):
         indexed_artists[index] = {"discogs_url": "https://www.discogs.com/artist/{}".format(artist),
-            "name": artist_cache.items[artist]}
+                                  "name": artist_cache.items[artist]}
 
     for index, vals in indexed_artists.items():
         statements.append("INSERT INTO Artist (ArtistID, DiscogsArtistURL, Name) VALUES ({artistid}, {discogsurl}, {name});".format(
@@ -231,7 +234,7 @@ def main():
         indexed_albums[index] = a
 
     for index, a in indexed_albums.items():
-        statements.append("INSERT INTO Album (AlbumID, Name, CoverArtists, AlbumArtworkURL, DiscogsURL, Score, ListenedOn) " + \
+        statements.append("INSERT INTO Album (AlbumID, Name, CoverArtists, AlbumArtworkURL, DiscogsURL, Score, ListenedOn) " +
                           "VALUES ({albumid}, {name}, {cover_artists}, {artwork_url}, {discogsurl}, {score}, {listened_on});".format(
                                 albumid=index,
                                 name=quote(escape_apostrophes(a.album_name)),
@@ -250,34 +253,34 @@ def main():
 
     for index, a in indexed_albums.items():
         for artist in a.main_artists:
-            statements.append("INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) " + \
-                            "VALUES ({albumid}, {artistid}, 1);".format(
+            statements.append("INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) " +
+                              "VALUES ({albumid}, {artistid}, 1);".format(
                                 albumid=index,
                                 artistid=discogs_id_to_artist_id[artist]
-                          ))
+                              ))
         for artist in a.other_artists:
-            statements.append("INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) " + \
-                            "VALUES ({albumid}, {artistid}, 0);".format(
+            statements.append("INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) " +
+                              "VALUES ({albumid}, {artistid}, 0);".format(
                                 albumid=index,
                                 artistid=discogs_id_to_artist_id[artist]
-                          ))
+                              ))
 
     # create style/genre/reason surrogate tables
 
     for (table_name, table) in [('Reason', reasons_table), ('Genre', genres_table), ('Style', styles_table)]:
-        for description, index in table.keymap.items(): # for each index, description surrogate key pair
+        for description, index in table.keymap.items():  # for each index, description surrogate key pair
             statements.append("INSERT INTO {tbl_name} ({id_column_name}, Description) VALUES ({id}, {desc});".format(
-                                tbl_name = table_name,
-                                id_column_name = "{}ID".format(table_name),
+                                tbl_name=table_name,
+                                id_column_name="{}ID".format(table_name),
                                 id=index,
                                 desc=quote(escape_apostrophes(description))
                             ))
 
     # add values to style/genre/reason intersection tables
 
-    for index, a in indexed_albums.items(): # for each album
+    for index, a in indexed_albums.items():  # for each album
         for short_name, table in [('Reason', a.reason_id), ('Genre', a.genre_id), ('Style', a.style_id)]: # for each descriptor
-            for id in table: # for each id this album has for this descriptor
+            for id in table:  # for each id this album has for this descriptor
                 statements.append("INSERT INTO Album{short_name} (AlbumID, {short_name}ID) VALUES ({album_id}, {id});".format(
                     short_name=short_name,
                     album_id=index,
