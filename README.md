@@ -9,6 +9,8 @@ The 'Year' column refers to date released. However, in source csv files for AMA'
 
 `python3 discogs_update.py` uses the [Discogs API](https://github.com/discogs/discogs_client) to validate the data in the spreadsheet, hence the most accurate file will be the one in root directory: `spreadsheets.csv`, a csv file generated from the information on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661).
 
+Dependencies: `pip3 install --user --upgrade discogs_client termcolor`
+
 ##### Sources for `spreadsheet.csv`:
 
 * [1001 Albums You Must Hear Before You Die](https://en.wikipedia.org/wiki/1001_Albums_You_Must_Hear_Before_You_Die). I attempted to include any albums that have ever been in the book, multiple versions with different lineups have come out in 2005, 2008, 2010, 2011, and 2016.
@@ -29,7 +31,7 @@ Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Gr
 
 A `python3.6` script used to interact with the sheets document and maintain `spreadsheets.csv`.
 
-Dependencies: `pip3 install --upgrade google-api-python-client prettytable`
+Dependencies: `pip3 install --user --upgrade google-api-python-client prettytable oauth2client`
 
 Setup: Run `python3 setup.py` to setup the OAuth2 client credentials.
 
