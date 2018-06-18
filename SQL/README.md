@@ -4,6 +4,8 @@
 
 <img src="https://raw.githubusercontent.com/seanbrecke/albums/master/SQL/images/diagram.png" alt="" width=600>
 
+Dependencies: `pip3 install --user --upgrade oauth2client xlrd google-api-python-client discogs_client`
+
 ##### Example Queries:
 
 People who have worked on the most albums: 
