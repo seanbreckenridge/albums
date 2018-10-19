@@ -16,6 +16,7 @@ from discogs_update import discogs_token
 
 import re
 import json
+import argparse
 from os import path
 from time import sleep
 
@@ -54,7 +55,7 @@ class autoincrement_analog:
     def add_comma_seperated_list(self, comma_seperated):
         return_ids = []
         # special case, since it has commas in it
-        if "Folk, World, & Country" in comma_seperated:
+        if "Folk, World, & Country" in comma_seperated: # special case, has commas in it.
             comma_seperated = comma_seperated.replace("Folk, World, & Country", "")
             return_ids.append(self.add('Folk, World, & Country'))
 
@@ -186,7 +187,7 @@ def get_values(credentials):
     return result.get("values", [])
 
 
-def main():
+def main(albums, use_score, base_table_file, statement_file):
     global artist_cache
     global d_Client
     global reasons_table
@@ -194,18 +195,9 @@ def main():
     global genres_table
     user_agent, token = discogs_token(token_filename)
     d_Client = discogs_client.Client(user_agent, user_token=token)
-    artist_cache = cache()
-    reasons_table = autoincrement_analog()
-    genres_table = autoincrement_analog()
-    styles_table = autoincrement_analog()
-    credentials = get_credentials()
+    artist_cache.update_json_file()
+
     statements = []  # SQL statements that would add data to the database
-    values = get_values(credentials)
-    if values is None:
-        print("No values returned from Google API")
-    else:
-        albums = [album(list(val)) for val in values[1:]]
-        artist_cache.update_json_file()
 
     # create artist SQL statements
 
@@ -229,17 +221,31 @@ def main():
     for index, a in enumerate(albums, 1):
         indexed_albums[index] = a
 
-    for index, a in indexed_albums.items():
-        statements.append("INSERT INTO Album (AlbumID, Name, CoverArtists, AlbumArtworkURL, DiscogsURL, Score, ListenedOn) " +
-                          "VALUES ({albumid}, {name}, {cover_artists}, {artwork_url}, {discogsurl}, {score}, {listened_on});".format(
-                                albumid=index,
-                                name=quote(escape_apostrophes(a.album_name)),
-                                cover_artists=quote(escape_apostrophes(a.cover_artist)),
-                                artwork_url='NULL' if a.album_artwork is None else quote(a.album_artwork),
-                                discogsurl='NULL' if a.discogs_url is None else quote(a.discogs_url),
-                                score='NULL' if a.score is None else a.score,
-                                listened_on='NULL' if a.listened_on is None else quote(a.listened_on)
-                            ))
+
+    if use_score:
+        for index, a in indexed_albums.items():
+            statements.append("INSERT INTO Album (AlbumID, Name, Year, CoverArtists, AlbumArtworkURL, DiscogsURL, Score, ListenedOn) " +
+                              "VALUES ({albumid}, {name}, {year}, {cover_artists}, {artwork_url}, {discogsurl}, {score}, {listened_on});".format(
+                                  albumid=index,
+                                  name=quote(escape_apostrophes(a.album_name)),
+                                  year=a.year,
+                                  cover_artists=quote(escape_apostrophes(a.cover_artist)),
+                                  artwork_url='NULL' if a.album_artwork is None else quote(a.album_artwork),
+                                  discogsurl='NULL' if a.discogs_url is None else quote(a.discogs_url),
+                                  score='NULL' if a.score is None else a.score,
+                                  listened_on='NULL' if a.listened_on is None else quote(a.listened_on)
+                              ))
+    else:
+        for index, a in indexed_albums.items():
+            statements.append("INSERT INTO Album (AlbumID, Name, Year, CoverArtists, AlbumArtworkURL, DiscogsURL) " +
+                              "VALUES ({albumid}, {name}, {year}, {cover_artists}, {artwork_url}, {discogsurl});".format(
+                                  albumid=index,
+                                  name=quote(escape_apostrophes(a.album_name)),
+                                  year=a.year,
+                                  cover_artists=quote(escape_apostrophes(a.cover_artist)),
+                                  artwork_url='NULL' if a.album_artwork is None else quote(a.album_artwork),
+                                  discogsurl='NULL' if a.discogs_url is None else quote(a.discogs_url),
+                              ))
 
     # add values to artist/album intersection table
 
@@ -247,6 +253,7 @@ def main():
     for index, vals in indexed_artists.items():
         discogs_id_to_artist_id[vals['discogs_url'].rstrip('/').split('/')[-1]] = index
 
+    
     for index, a in indexed_albums.items():
         for artist in a.main_artists:
             statements.append("INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) " +
@@ -285,13 +292,52 @@ def main():
 
     # write to files
 
-    with open(tables_file) as f:
+    with open(base_table_file) as f:
         table_definitions = f.read()
 
-    with open(output_file, 'w') as g:
+    with open(statement_file, 'w') as g:
         g.write("{}\n".format(table_definitions))
         for line in statements:
             g.write("{}\n".format(line))
 
+def parse_args_call_main():
+    global artist_cache
+    global d_Client
+    global reasons_table
+    global styles_table
+    global genres_table
+    parser = argparse.ArgumentParser(
+        prog='python3 create_statements.py',
+        description="Creates MySQL statements according to the data from the spreadsheet.",
+        formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
+    parser.add_argument("-s", "--use-scores", action="store_true",
+                        help="If flag is present on command line, adds all albums" +
+                        "including scores and date is was listen to on. If the flag is" +
+                        "not present, adds all albums, disregarding any albums"
+                        "added manually, by relation, or on a recommendation")
+
+    args = parser.parse_args()
+ 
+    credentials = get_credentials()
+    values = get_values(credentials)
+    artist_cache = cache()
+    reasons_table = autoincrement_analog()
+    genres_table = autoincrement_analog()
+    styles_table = autoincrement_analog()
+
+    if values is None:
+        print("No values returned from Google API")
+        sys.exit(1)
+    else:
+        if args.use_scores:
+            albums = [album(list(val)) for val in values[1:]]
+            main(albums, True, 'score_base_tables.sql', 'score_statements.sql')
+        else:
+            values = [row for row in values[1:] if not
+              set(map(lambda s: s.lower(), re.split("\s*,\s*", row[5]))) # row[5] is the reason
+              .issubset(set(["manual", "relation", "recommendation"]))]
+            albums = [album(list(val)) for val in values] 
+            main(albums, False, 'base_tables.sql', 'statements.sql')
+
 if __name__ == "__main__":
-    main()
+    parse_args_call_main()
