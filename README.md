@@ -29,7 +29,7 @@ Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Gr
 
 ##### `nextalbums.py`
 
-A `python3.6` script used to interact with the sheets document and maintain `spreadsheets.csv`.
+A `python3` script used to interact with the sheets document and maintain `spreadsheets.csv`.
 
 Help:
 
