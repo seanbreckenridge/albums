@@ -1,16 +1,19 @@
-DROP SCHEMA IF EXISTS `albums`;
-CREATE SCHEMA `albums`;
-USE `albums`;
+DROP SCHEMA IF EXISTS `scorealbums`;
+CREATE SCHEMA `scorealbums`;
+USE `scorealbums`;
 
 CREATE TABLE `Album` (
   `AlbumID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` varchar(256) NOT NULL,
   `CoverArtists` varchar(512) NOT NULL,
   `AlbumArtworkURL` varchar(2048) DEFAULT NULL,
-  `DiscogsURL` varchar(2048) DEFAULT NULL,
   `Year` int(4) DEFAULT NULL,
+  `DiscogsURL` varchar(2048) DEFAULT NULL,
+  `Score` FLOAT(3,1) DEFAULT NULL,
+  `ListenedOn` date DEFAULT NULL,
   PRIMARY KEY (`AlbumID`)
 );
+
 
 CREATE TABLE `Artist` (
   `ArtistID` int(11) NOT NULL AUTO_INCREMENT,
@@ -74,6 +77,6 @@ CREATE TABLE `AlbumStyle` (
   CONSTRAINT `AlbumStyle_Style_StyleID` FOREIGN KEY (`StyleID`) REFERENCES `Style` (`StyleID`) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
-ALTER TABLE albums.Album CONVERT TO CHARACTER SET utf8;
-ALTER TABLE albums.Artist CONVERT TO CHARACTER SET utf8;
+ALTER TABLE scorealbums.Album CONVERT TO CHARACTER SET utf8;
+ALTER TABLE scorealbums.Artist CONVERT TO CHARACTER SET utf8;
 
