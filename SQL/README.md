@@ -4,6 +4,10 @@
 
 <img src="https://raw.githubusercontent.com/seanbrecke/albums/master/SQL/images/diagram.png" alt="" width=600>
 
+It can be run with a flag: `python3 create_statements.py --use-scores`, which adds the "Score" and "Listened On" columns to the "Album" Table, and creates the file `score_statements.sql`.
+
+Running it *without* the `--use-scores` flag is close to what `statements.csv` in the root directory chooses as valid albums - only albums that have won at least 1 award, disregarding any albums I added to the spreadsheet manually, by relation, or on a recommendation.
+
 Dependencies: `pip3 install --user --upgrade oauth2client xlrd google-api-python-client discogs_client`
 
 ##### Example Queries:
@@ -26,22 +30,20 @@ ORDER BY works DESC
 ;
 ```
 
-Top Jazz Albums:
+My Favorite Albums from the 80s:
 ```SQL
-USE albums;
-SELECT Album.Name, Album.CoverArtists, Album.Score, Album.ListenedOn
+USE scorealbums;
+SELECT Album.Name, Album.CoverArtists, Album.Year, Album.Score, Album.ListenedOn
 FROM Album 
-JOIN AlbumGenre
-	ON Album.AlbumID = AlbumGenre.AlbumID
-JOIN Genre
-	ON AlbumGenre.GenreID = Genre.GenreID
-Where Genre.Description = 'Jazz' AND Album.Score IS NOT NULL
+WHERE Year > 1979 AND Year < 1990 AND SCORE IS NOT NULL
 ORDER BY Album.Score DESC
+LIMIT 25
 ;
 ```
 
 Favorite Genres:
 ```SQL
+USE scorealbums;
 SELECT Genre.Description, AVG(Album.Score) as `Average Score`
 FROM Album 
 JOIN AlbumGenre
@@ -53,3 +55,4 @@ GROUP BY Genre.GenreID
 ORDER BY `Average Score` DESC
 ;
 ```
+
