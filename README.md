@@ -7,9 +7,9 @@ The source csv files are bound to have errors somewhere, e.g. duplicates due to 
 
 The 'Year' column refers to date released. However, in source csv files for AMA's and Grammies, the year is often the date awarded.
 
-`python3 discogs_update.py` uses the [Discogs API](https://github.com/discogs/discogs_client) to validate the data in the spreadsheet, hence the most accurate file will be the one in root directory: `spreadsheets.csv`, a csv file generated from the information on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661).
+`python3 discogs_update.py` uses the [Discogs API](https://github.com/discogs/discogs_client) to validate the data in the spreadsheet, fixing said errors, hence the most accurate file will be the one in root directory: `spreadsheet.csv`, a csv file generated from the information on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). `spreadsheet.csv` removes any albums that I added manually, by relation, or on a recommendation. 
 
-Dependencies: `pip3 install --user --upgrade discogs_client termcolor`
+You can also use [`SQL/statements.sql`](https://github.com/seanbreckenridge/albums/tree/master/SQL) to create a MySQL schema with similar data to `spreadsheet.csv`. These files will be updated whenever I add something to the list.
 
 ##### Sources for `spreadsheet.csv`:
 
@@ -30,10 +30,6 @@ Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Gr
 ##### `nextalbums.py`
 
 A `python3.6` script used to interact with the sheets document and maintain `spreadsheets.csv`.
-
-Dependencies: `pip3 install --user --upgrade google-api-python-client prettytable oauth2client`
-
-Setup: Run `python3 setup.py` to setup the OAuth2 client credentials.
 
 Help:
 
@@ -73,18 +69,14 @@ $ python3 nextalbums.py -oc 7
 | Caetano Veloso             | Caetano Veloso | 1968 |
 +----------------------------+----------------+------+
 ```
-Print 3 random albums to listen to:
-```
-$ python3 nextalbums.py -rc 3
-+--------------------+------------+------+
-| Album              | Artist     | Year |
-+--------------------+------------+------+
-| Unorthodox Jukebox | Bruno Mars | 2014 |
-| In the Lonely Hour | Sam Smith  | 2015 |
-| Blues Singer       | Buddy Guy  | 2004 |
-+--------------------+------------+------+
-```
 Don't print anything and open the cell that corresponds to the next album to listen to in a web browser.
 ```
 $ python3 nextalbums.py -qo
 ```
+
+Dependencies: `pip3 install --user --upgrade google-api-python-client prettytable oauth2client discogs_client termcolor`
+
+If you want to run the python files on your own system, you'd have to change the `spreadsheet_id` [here](https://github.com/seanbreckenridge/albums/blob/master/SQL/create_statements.py#L23), [here](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L23), and [here](https://github.com/seanbreckenridge/albums/blob/master/discogs_update.py#L20) to your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661) (you can create a spreadsheet on your own google account and ⌘A→ ⌘C→⌘V all of it), edit it the [pageId](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L24) (the number after `edit#gid=` when on the google sheets URL), run `setup.py`, and create a file `discogs_token.json` in the root directory (info can be found [here](https://www.discogs.com/developers/)) with contents similar to:
+
+`{"token": "FDJjksdfJkJFDNMoiweiIRWkj", "user_agent": "yourUserNameSecret/1.0"}`
+
