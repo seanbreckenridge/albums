@@ -1,5 +1,5 @@
 ### albums
-A collection of csv files containing popular/acclaimed albums, used to make a inordinate list of albums to listen to.
+A collection of csv/sql files containing popular/acclaimed albums, used to make a inordinate list of albums to listen to.
 
 This is a personal project of mine, but I thought I'd leave these files up here in case anyone wanted to use them.
 
