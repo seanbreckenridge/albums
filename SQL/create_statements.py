@@ -189,12 +189,9 @@ def get_values(credentials):
 
 def main(albums, use_score, base_table_file, statement_file):
     global artist_cache
-    global d_Client
     global reasons_table
     global styles_table
     global genres_table
-    user_agent, token = discogs_token(token_filename)
-    d_Client = discogs_client.Client(user_agent, user_token=token)
     artist_cache.update_json_file()
 
     statements = []  # SQL statements that would add data to the database
@@ -304,7 +301,8 @@ def parse_args_call_main():
     global artist_cache
     global d_Client
     global reasons_table
-    global styles_table
+    global styles_table 
+    global d_Client
     global genres_table
     parser = argparse.ArgumentParser(
         prog='python3 create_statements.py',
@@ -324,7 +322,10 @@ def parse_args_call_main():
     reasons_table = autoincrement_analog()
     genres_table = autoincrement_analog()
     styles_table = autoincrement_analog()
-
+    user_agent, token = discogs_token(token_filename)
+    d_Client = discogs_client.Client(user_agent, user_token=token)
+    
+    
     if values is None:
         print("No values returned from Google API")
         sys.exit(1)
