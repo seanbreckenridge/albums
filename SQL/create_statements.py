@@ -1,7 +1,11 @@
 """Creates MySQL compliant SQL statements to create a schema with current album data from the spreadsheet"""
 
 import sys
-sys.path.insert(0, '..')
+import re
+import json
+import argparse
+import os
+from time import sleep
 
 import httplib2
 from oauth2client import client
@@ -11,19 +15,23 @@ from googleapiclient import discovery
 import discogs_client
 import xlrd
 
+
+def get_from_parent_dir(path):
+    """Gets an aboslute path to a file one directory above this"""
+    return os.path.abspath(os.path.join(os.path.join(os.path.dirname(__file__), os.path.pardir), path))
+
+
+def SQL_dir(path):
+    """Gets an absolute path to a file in this directory"""
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), path))
+
+sys.path.insert(0, get_from_parent_dir(""))
+
 from nextalbums import get_credentials
 from discogs_update import discogs_token
 
-import re
-import json
-import argparse
-from os import path
-from time import sleep
-
 spreadsheet_id = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
-token_filename = path.join(path.normpath('..'), "discogs_token.json")
-tables_file = "base_tables.sql"
-output_file = "statements.sql"
+token_filename = get_from_parent_dir("discogs_token.json")
 
 d_Client = None
 artist_cache = None
@@ -55,7 +63,7 @@ class autoincrement_analog:
     def add_comma_seperated_list(self, comma_seperated):
         return_ids = []
         # special case, since it has commas in it
-        if "Folk, World, & Country" in comma_seperated: # special case, has commas in it.
+        if "Folk, World, & Country" in comma_seperated:  # special case, has commas in it.
             comma_seperated = comma_seperated.replace("Folk, World, & Country", "")
             return_ids.append(self.add('Folk, World, & Country'))
 
@@ -67,11 +75,11 @@ class autoincrement_analog:
 
 class cache:
     """class to manage caching API requests for artist names"""
-    def __init__(self):
-        self.jsonpath = 'artist_cache.json'
-        self.write_to_cache_const = 5
+    def __init__(self, json_path):
+        self.jsonpath = json_path
+        self.write_to_cache_const = 25
         self.write_to_cache_periodically = self.write_to_cache_const
-        if not path.exists(self.jsonpath):
+        if not os.path.exists(self.jsonpath):
             open(self.jsonpath, 'a').close()
         with open(self.jsonpath, 'r') as js_f:
             try:
@@ -218,7 +226,6 @@ def main(albums, use_score, base_table_file, statement_file):
     for index, a in enumerate(albums, 1):
         indexed_albums[index] = a
 
-
     if use_score:
         for index, a in indexed_albums.items():
             statements.append("INSERT INTO Album (AlbumID, Name, Year, CoverArtists, AlbumArtworkURL, DiscogsURL, Score, ListenedOn) " +
@@ -250,7 +257,6 @@ def main(albums, use_score, base_table_file, statement_file):
     for index, vals in indexed_artists.items():
         discogs_id_to_artist_id[vals['discogs_url'].rstrip('/').split('/')[-1]] = index
 
-    
     for index, a in indexed_albums.items():
         for artist in a.main_artists:
             statements.append("INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) " +
@@ -265,7 +271,7 @@ def main(albums, use_score, base_table_file, statement_file):
                                 artistid=discogs_id_to_artist_id[artist]
                               ))
 
-    # create style/genre/reason surrogate tables
+    # create style/genre/reason surrogate ids
 
     for (table_name, table) in [('Reason', reasons_table), ('Genre', genres_table), ('Style', styles_table)]:
         for description, index in table.keymap.items():  # for each index, description surrogate key pair
@@ -279,7 +285,7 @@ def main(albums, use_score, base_table_file, statement_file):
     # add values to style/genre/reason intersection tables
 
     for index, a in indexed_albums.items():  # for each album
-        for short_name, table in [('Reason', a.reason_id), ('Genre', a.genre_id), ('Style', a.style_id)]: # for each descriptor
+        for short_name, table in [('Reason', a.reason_id), ('Genre', a.genre_id), ('Style', a.style_id)]: #  for each descriptor
             for id in table:  # for each id this album has for this descriptor
                 statements.append("INSERT INTO Album{short_name} (AlbumID, {short_name}ID) VALUES ({album_id}, {id});".format(
                     short_name=short_name,
@@ -298,47 +304,54 @@ def main(albums, use_score, base_table_file, statement_file):
             g.write("{}\n".format(line))
 
 def parse_args_call_main():
+    global d_Client
     global artist_cache
-    global d_Client
     global reasons_table
-    global styles_table 
-    global d_Client
+    global styles_table
     global genres_table
     parser = argparse.ArgumentParser(
         prog='python3 create_statements.py',
         description="Creates MySQL statements according to the data from the spreadsheet.",
         formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
     parser.add_argument("-s", "--use-scores", action="store_true",
-                        help="If flag is present on command line, adds all albums" +
-                        "including scores and date is was listen to on. If the flag is" +
-                        "not present, adds all albums, disregarding any albums"
+                        help="If flag is present on command line, adds all albums " +
+                        "including scores and date is was listen to on. If the flag is " +
+                        "not present, adds all albums, disregarding any albums " +
                         "added manually, by relation, or on a recommendation")
 
     args = parser.parse_args()
- 
+
+    artist_cache_filepath = "artist_cache.json"
+    if args.use_scores:
+        artist_cache_filepath = f"score_{artist_cache_filename}"
+
     credentials = get_credentials()
     values = get_values(credentials)
-    artist_cache = cache()
+    artist_cache = cache(SQL_dir(artist_cache_filepath))
     reasons_table = autoincrement_analog()
     genres_table = autoincrement_analog()
     styles_table = autoincrement_analog()
     user_agent, token = discogs_token(token_filename)
     d_Client = discogs_client.Client(user_agent, user_token=token)
-    
-    
+
+    tables_file = SQL_dir("base_tables.sql")
+    output_file = SQL_dir("statements.sql")
+    score_tables_file = SQL_dir("score_base_tables.sql")
+    score_output_file = SQL_dir("score_statements.sql")
+
     if values is None:
         print("No values returned from Google API")
         sys.exit(1)
     else:
         if args.use_scores:
             albums = [album(list(val)) for val in values[1:]]
-            main(albums, True, 'score_base_tables.sql', 'score_statements.sql')
+            main(albums, True, score_tables_file, score_output_file)
         else:
             values = [row for row in values[1:] if not
               set(map(lambda s: s.lower(), re.split("\s*,\s*", row[5]))) # row[5] is the reason
               .issubset(set(["manual", "relation", "recommendation"]))]
-            albums = [album(list(val)) for val in values] 
-            main(albums, False, 'base_tables.sql', 'statements.sql')
+            albums = [album(list(val)) for val in values]
+            main(albums, False, tables_file, output_file)
 
 if __name__ == "__main__":
     parse_args_call_main()

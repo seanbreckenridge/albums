@@ -1,3 +1,12 @@
+import sys
+import re
+import os
+import traceback
+import argparse
+from urllib.parse import urlparse
+from json import load
+from time import sleep
+
 import httplib2
 from oauth2client import client
 from oauth2client import tools
@@ -9,20 +18,12 @@ from termcolor import colored
 
 from nextalbums import get_credentials
 
-import sys
-import re
-import traceback
-import argparse
-from urllib.parse import urlparse
-from json import load
-from time import sleep
-
 spreadsheet_id = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
 d_Client = None
 update_threshold = 10   # ends the program and updates after these many updates
 update_count = 0
 attempt_to_resolve_to_master = False
-token_filename = "discogs_token.json"
+token_filename = os.path.abspath(os.path.join(os.path.dirname(__file__), "discogs_token.json"))
 
 
 def discogs_token(filename):
@@ -182,10 +183,10 @@ def fix_rows(values):
                 print(f"[Discogs] API Limit Reached. Waiting {wait_time} seconds...")
                 sleep(wait_time)
             else:
-                traceback.print_exc() # non rate-limit related error
+                traceback.print_exc()  # non rate-limit related error
                 break
         except:
-            traceback.print_exc() # other error
+            traceback.print_exc() #  other error
             break
 
         # check for duplicate links, i.e. duplicate entries
