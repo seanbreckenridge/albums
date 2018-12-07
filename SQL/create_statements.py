@@ -322,7 +322,7 @@ def main():
 
     artist_cache_filepath = "artist_cache.json"
     if args.use_scores:
-        artist_cache_filepath = f"score_{artist_cache_filename}"
+        artist_cache_filepath = f"score_{artist_cache_filepath}"
 
     credentials = get_credentials()
     values = get_values(credentials)
