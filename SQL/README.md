@@ -12,7 +12,7 @@ Dependencies: `pip3 install --user --upgrade oauth2client xlrd google-api-python
 
 ##### Example Queries:
 
-People who have worked on the most albums: 
+People who have worked on the most albums:
 
 ```SQL
 USE albums;
@@ -34,7 +34,7 @@ My Favorite Albums from the 80s:
 ```SQL
 USE scorealbums;
 SELECT Album.Name, Album.CoverArtists, Album.Year, Album.Score, Album.ListenedOn
-FROM Album 
+FROM Album
 WHERE Year > 1979 AND Year < 1990 AND SCORE IS NOT NULL
 ORDER BY Album.Score DESC
 LIMIT 25
@@ -45,7 +45,7 @@ Favorite Genres:
 ```SQL
 USE scorealbums;
 SELECT Genre.Description, AVG(Album.Score) as `Average Score`
-FROM Album 
+FROM Album
 JOIN AlbumGenre
 	ON Album.AlbumID = AlbumGenre.AlbumID
 JOIN Genre
@@ -55,4 +55,3 @@ GROUP BY Genre.GenreID
 ORDER BY `Average Score` DESC
 ;
 ```
-
