@@ -27,11 +27,8 @@ def SQL_dir(path):
 
 sys.path.insert(0, get_from_parent_dir(""))
 
-from nextalbums import get_credentials
+from nextalbums import get_credentials, spreadsheet_id
 from discogs_update import discogs_token
-
-spreadsheet_id = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
-token_filename = get_from_parent_dir("discogs_token.json")
 
 d_Client = None
 artist_cache = None
@@ -84,6 +81,7 @@ class cache:
         with open(self.jsonpath, 'r') as js_f:
             try:
                 self.items = json.load(js_f)
+                print("[Cache] {} items loaded from cache.".format(len(self.items)))
             except json.JSONDecodeError:  # file is empty or broken
                 self.items = {}
 
@@ -116,6 +114,7 @@ class cache:
         else:
             self.items[str(id)] = self.download_name(id)
             return self.items[str(id)]
+
 
     def __iter__(self):
         return self.items.__iter__()
@@ -195,7 +194,7 @@ def get_values(credentials):
     return result.get("values", [])
 
 
-def main(albums, use_score, base_table_file, statement_file):
+def statements(albums, use_score, base_table_file, statement_file):
     global artist_cache
     global reasons_table
     global styles_table
@@ -303,7 +302,7 @@ def main(albums, use_score, base_table_file, statement_file):
         for line in statements:
             g.write("{}\n".format(line))
 
-def parse_args_call_main():
+def main():
     global d_Client
     global artist_cache
     global reasons_table
@@ -331,7 +330,7 @@ def parse_args_call_main():
     reasons_table = autoincrement_analog()
     genres_table = autoincrement_analog()
     styles_table = autoincrement_analog()
-    user_agent, token = discogs_token(token_filename)
+    user_agent, token = discogs_token(get_from_parent_dir("discogs_token.json"))
     d_Client = discogs_client.Client(user_agent, user_token=token)
 
     tables_file = SQL_dir("base_tables.sql")
@@ -345,13 +344,13 @@ def parse_args_call_main():
     else:
         if args.use_scores:
             albums = [album(list(val)) for val in values[1:]]
-            main(albums, True, score_tables_file, score_output_file)
+            statements(albums, True, score_tables_file, score_output_file)
         else:
             values = [row for row in values[1:] if not
               set(map(lambda s: s.lower(), re.split("\s*,\s*", row[5]))) # row[5] is the reason
               .issubset(set(["manual", "relation", "recommendation"]))]
             albums = [album(list(val)) for val in values]
-            main(albums, False, tables_file, output_file)
+            statements(albums, False, tables_file, output_file)
 
 if __name__ == "__main__":
-    parse_args_call_main()
+    main()

@@ -16,9 +16,8 @@ import discogs_client
 from distutils.util import strtobool
 from termcolor import colored
 
-from nextalbums import get_credentials
+from nextalbums import get_credentials, spreadsheet_id
 
-spreadsheet_id = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
 d_Client = None
 update_threshold = 10   # ends the program and updates after these many updates
 update_count = 0

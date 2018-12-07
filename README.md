@@ -7,7 +7,7 @@ The source csv files are bound to have errors somewhere, e.g. duplicates due to 
 
 The 'Year' column refers to date released. However, in source csv files for AMA's and Grammies, the year is often the date awarded.
 
-`python3 discogs_update.py` uses the [Discogs API](https://github.com/discogs/discogs_client) to validate the data in the spreadsheet, fixing said errors, hence the most accurate file will be the one in root directory: `spreadsheet.csv`, a csv file generated from the information on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). `spreadsheet.csv` removes any albums that I added manually, by relation, or on a recommendation. 
+`python3 discogs_update.py` uses the [Discogs API](https://github.com/discogs/discogs_client) to validate the data in the spreadsheet, fixing said errors, hence the most accurate file will be the one in root directory: `spreadsheet.csv`, a csv file generated from the information on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). `spreadsheet.csv` removes any albums that I added manually, by relation, or on a recommendation.
 
 You can also use [`SQL/statements.sql`](https://github.com/seanbreckenridge/albums/tree/master/SQL) to create a MySQL schema with similar data to `spreadsheet.csv`. These files will be updated whenever I add something to the list.
 
@@ -76,7 +76,6 @@ $ python3 nextalbums.py -qo
 
 Dependencies: `pip3 install --user --upgrade google-api-python-client prettytable oauth2client discogs_client termcolor`
 
-If you want to run the python files on your own system, you'd have to change the `spreadsheet_id` [here](https://github.com/seanbreckenridge/albums/blob/master/SQL/create_statements.py#L23), [here](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L23), and [here](https://github.com/seanbreckenridge/albums/blob/master/discogs_update.py#L20) to your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661) (you can create a spreadsheet on your own google account and ⌘A→ ⌘C→⌘V all of it), edit the [pageId](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L24) (the number after `edit#gid=` when on the google sheets URL), run `setup.py`, and create a file `discogs_token.json` in the root directory (info can be found [here](https://www.discogs.com/developers/)) with contents similar to:
+If you want to run the python files on your own system, you'd have to change the `spreadsheet_id` [here](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L23) (the id is the long string after `/d/` in the URL when you're editing it) to your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661) (you can create a spreadsheet on your own google account and ⌘A→ ⌘C→⌘V all of it), edit the [pageId](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L24) (the number after `edit#gid=` when on the google sheets URL), run `setup.py`, and create a file `discogs_token.json` in the root directory (info can be found [here](https://www.discogs.com/developers/), register [here](https://www.discogs.com/settings/developers)) with contents similar to:
 
 `{"token": "FDJjksdfJkJFDNMoiweiIRWkj", "user_agent": "yourUserNameSecret/1.0"}`
-
