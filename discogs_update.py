@@ -103,7 +103,7 @@ def fix_discogs_link(link):
 def fix_discogs_artist_name(artists):
     """Fixes names if there are duplicates on Discogs.
     Discogs lists some artists with parens after their name to prevent duplicates."""
-    artist_ids = [str(a.id) for a in artists]
+    artist_ids = [str(a.id) for a in artists if a.id != 0]
     artists_names = [str(a.name) for a in artists]
     artist_fixed_names = [re.sub(r"\(\d+\)$", "", name).strip() for name in artists_names]
     return ", ".join(artist_fixed_names), "|".join(artist_ids)
@@ -144,7 +144,7 @@ def update_row_with_discogs_data(row, max_length):
     row[6] = '=IMAGE("{}")'.format(rel.images[0]["uri"])  # Image
     row[9] = ", ".join(sorted(set(rel.genres if rel.genres is not None else [])))  # Genres
     row[10] = ", ".join(sorted(set(rel.styles if rel.styles is not None else [])))  # Style
-    artist_ids = set([person.id for person in rel.credits])
+    artist_ids = set([person.id for person in rel.credits if person.id != 0])
     row[11] = "|".join(map(str, artist_ids))  # Credit Artist IDs
     if prompt_changes(original_row, row):
         return row
