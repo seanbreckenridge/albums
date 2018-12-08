@@ -115,6 +115,8 @@ class cache:
             self.items[str(id)] = self.download_name(id)
             return self.items[str(id)]
 
+    def put(self, id, name):
+        self.items[str(id)] = str(name)
 
     def __iter__(self):
         return self.items.__iter__()
@@ -320,13 +322,22 @@ def main():
 
     args = parser.parse_args()
 
-    artist_cache_filepath = "artist_cache.json"
-    if args.use_scores:
-        artist_cache_filepath = f"score_{artist_cache_filepath}"
+    artist_cache_filepath = SQL_dir("artist_cache.json")
+    score_artist_cache_filepath = SQL_dir("score_artist_cache.json")
 
     credentials = get_credentials()
     values = get_values(credentials)
-    artist_cache = cache(SQL_dir(artist_cache_filepath))
+    if args.use_scores:
+        # add items that may have been added to the base cache to prevent duplicate API calls
+        print("Loading base artist cache...")
+        base_cache = cache(artist_cache_filepath)
+        print("Loading score artist cache...")
+        artist_cache = cache(score_artist_cache_filepath)
+        for id in base_cache:
+            if id not in artist_cache:
+                artist_cache.put(id, base_cache.get(id))
+    else:
+        artist_cache = cache(artist_cache_filepath)
     reasons_table = autoincrement_analog()
     genres_table = autoincrement_analog()
     styles_table = autoincrement_analog()
