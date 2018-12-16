@@ -12,6 +12,21 @@ Dependencies: `pip3 install --user --upgrade oauth2client xlrd google-api-python
 
 ##### Example Queries:
 
+Anything that's won a grammy award:
+```SQL
+use albums;
+SELECT Album.Name, Album.CoverArtists, Album.Year, GROUP_CONCAT(Reason.Description) as `Awards`
+FROM Album
+JOIN AlbumReason
+	ON Album.AlbumID = AlbumReason.AlbumID
+JOIN Reason
+	ON AlbumReason.ReasonID = Reason.ReasonID
+WHERE Reason.Description LIKE "Grammy%" # Anything that starts with "Grammy"
+GROUP BY Album.AlbumID
+ORDER BY COUNT(Reason.ReasonID) DESC # order by number of grammy awards
+;
+```
+
 People who have worked on the most albums:
 
 ```SQL

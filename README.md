@@ -3,13 +3,13 @@ A collection of csv/sql files containing popular/acclaimed albums, used to make 
 
 This is a personal project of mine, but I thought I'd leave these files up here in case anyone wanted to use them.
 
-The source csv files are bound to have errors somewhere, e.g. duplicates due to slight differences in album names.
+The source csv files are bound to have errors somewhere, e.g. duplicates due to slight differences in album names. If you wish to list the wins for a certain award, it would be most accurate to use the SQL files and query for them. [Example](SQL#example-queries)
 
 The 'Year' column refers to date released. However, in source csv files for AMA's and Grammies, the year is often the date awarded.
 
 `python3 discogs_update.py` uses the [Discogs API](https://github.com/discogs/discogs_client) to validate the data in the spreadsheet, fixing said errors, hence the most accurate file will be the one in root directory: `spreadsheet.csv`, a csv file generated from the information on [my spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). `spreadsheet.csv` removes any albums that I added manually, by relation, or on a recommendation.
 
-You can also use [`SQL/statements.sql`](https://github.com/seanbreckenridge/albums/tree/master/SQL) to create a MySQL schema with similar data to `spreadsheet.csv`. These files will be updated whenever I add something to the list.
+You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with similar data to `spreadsheet.csv`. These files will be updated whenever I add something to the list.
 
 ##### Sources for `spreadsheet.csv`:
 
@@ -23,9 +23,7 @@ You can also use [`SQL/statements.sql`](https://github.com/seanbreckenridge/albu
     * [Favorite Country Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Country_Album)
     * [Favorite Rap/Hip-Hop Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Rap/Hip-Hop_Album)
 
-* Wins from a multitude (though not all) Grammy Awards, listed [here](https://github.com/seanbrecke/albums/tree/master/src/Grammy).
-
-Both the [AMA](https://github.com/seanbrecke/albums/tree/master/src/AMA) and [Grammy](https://github.com/seanbrecke/albums/tree/master/src/Grammy) directories have an `all.csv` (nominations and wins) and `wins.csv` (just wins) file.
+* Wins from a multitude (though not all) Grammy Awards, listed [here](src/Grammy).
 
 ##### `nextalbums.py`
 
