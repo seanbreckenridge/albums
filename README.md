@@ -3,7 +3,7 @@ A collection of csv/sql files containing popular/acclaimed albums, used to make 
 
 This is a personal project of mine, but I thought I'd leave these files up here in case anyone wanted to use them.
 
-The source csv files are bound to have errors somewhere, e.g. duplicates due to slight differences in album names. If you wish to list the wins for a certain award, it would be most accurate to use the SQL files and query for them. [Example](SQL#example-queries)
+The source csv files are bound to have errors somewhere, e.g. duplicates due to slight differences in album names. I've stopped updating the `wins.csv`/`all.csv` files manually. If you wish to list the wins for a certain award, it would be most accurate to use the SQL files and query for them. [Example](SQL#example-queries)
 
 The 'Year' column refers to date released. However, in source csv files for AMA's and Grammies, the year is often the date awarded.
 
