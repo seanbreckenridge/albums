@@ -19,6 +19,7 @@ from prettytable import PrettyTable
 
 # location to save --csv output to.
 CSV_OUTPUT_FILE = 'spreadsheet.csv'
+PREV_CALL_FILE = os.path.join(os.path.dirname(__file__), ".prev_call")
 
 spreadsheet_id = '12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M'
 pageId = '1451660661'
@@ -50,6 +51,12 @@ def parse_command_line_args():
                         "Ignored if choosing randomly.")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="quiet mode - only print errors.")
+    parser.add_argument("-m", "--memory", action="store_true",
+                        help="open the spreadsheet online based" +
+                        "on the previous call to next albums" +
+                        "and quit. This is much faster since" +
+                        "it doesn't require an API call" +
+                        "(the line stored in '.prev_call')")
     parser.add_argument("--csv", action="store_true",
                         help="Generates a CSV file without " +
                         "any scores/'listened on' dates.")
@@ -61,11 +68,14 @@ def parse_command_line_args():
         if args.count < 1:
             print("Count must be bigger than 0.", file=sys.stderr)
             sys.exit(1)
+    if args.memory:
+        args.open = True
+        args.quiet = True
     # redirect stdout to os.devnull if quiet mode is activated:
     if args.quiet:
         sys.stdout = open(os.devnull, 'w')
-
-    return args.count, args.random, args.open, args.csv
+    
+    return args.count, args.random, args.open, args.csv, args.memory
 
 
 def csv_and_exit(values):
@@ -130,8 +140,18 @@ def get_credentials():
 
 if __name__ == "__main__":
 
-    count, choose_random, open_in_browser, make_csv = parse_command_line_args()
+    count, choose_random, open_in_browser, make_csv, open_from_memory = parse_command_line_args()
 
+    if open_from_memory:
+        try:
+            with open(PREV_CALL_FILE) as prev_f:
+                prev_album_cell = prev_f.read().strip()
+            webbrowser.open("https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
+            .format(spreadsheet_id, pageId, prev_album_cell))
+            sys.exit(1)
+        except: # no previous call
+            pass
+            
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?version=v4')
@@ -146,36 +166,38 @@ if __name__ == "__main__":
 
     if not values:
         print('No Values returned from Google API.', file=sys.stderr)
-    else:
-        if make_csv:
-            csv_and_exit(values)
-        header = values.pop(0)[1:]  # pop header from values
-        p_table = PrettyTable()
-        p_table.field_names = header  # set header
-        for header_name in header:
-            p_table.align[header_name] = 'l'  # align left
+        sys.exit(1)
+    if make_csv:
+        csv_and_exit(values)
+    header = values.pop(0)[1:]  # pop header from values
+    p_table = PrettyTable()
+    p_table.field_names = header  # set header
+    for header_name in header:
+        p_table.align[header_name] = 'l'  # align left
 
-        not_listened_to = [tuple((i, [album, artist, year]))
-                           for i, (score, album, artist, year) in enumerate(values)
-                           if not score.strip()]
-        # tuple is so we can link to location in spreadsheet later.
+    not_listened_to = [tuple((i, [album, artist, year]))
+                       for i, (score, album, artist, year) in enumerate(values)
+                       if not score.strip()]
+    # tuple is so we can link to location in spreadsheet later.
 
-        if choose_random:  # random choice
-            while count and not_listened_to:
-                p_table.add_row(format_for_table(
-                                not_listened_to.pop(randint(0, len(not_listened_to) - 1))[1]))
-                count -= 1
-        else:  # chronological
-            for index in range(count):
-                if index < len(not_listened_to):
-                    if index == 0:
-                        link_range = not_listened_to[index][0] + 2
-                        #  + 2 is accounting for header
-                        #  and the fact that sheets starts from 1 instead of 0.
-                    p_table.add_row(format_for_table(not_listened_to[index][1]))
+    if choose_random:  # random choice
+        while count and not_listened_to:
+            p_table.add_row(format_for_table(
+                            not_listened_to.pop(randint(0, len(not_listened_to) - 1))[1]))
+            count -= 1
+    else:  # chronological
+        for index in range(count):
+            if index < len(not_listened_to):
+                if index == 0:
+                    link_range = not_listened_to[index][0] + 2
+                    #  + 2 is accounting for header
+                    #  and the fact that sheets starts from 1 instead of 0.
+                    with open(PREV_CALL_FILE, 'w') as call_f:
+                        call_f.write(f"{link_range}")
+                p_table.add_row(format_for_table(not_listened_to[index][1]))
 
-            if open_in_browser and not choose_random:
-                webbrowser.open_new_tab(
-                    "https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
-                    .format(spreadsheet_id, pageId, link_range))
-        print(p_table)
+        if open_in_browser and not choose_random:
+            webbrowser.open_new_tab(
+                "https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
+                .format(spreadsheet_id, pageId, link_range))
+    print(p_table)
