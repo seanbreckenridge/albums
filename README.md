@@ -32,7 +32,7 @@ A `python3` script used to interact with the sheets document and maintain `sprea
 Help:
 
 ```
-usage: python3 nextalbums.py [-h] [-c COUNT] [-r] [-o] [-q] [--csv]
+usage: python3 nextalbums.py [-h] [-c COUNT] [-r] [-o] [-q] [-m] [--csv]
 
 List the Next Albums to listen to.
 
@@ -46,6 +46,10 @@ optional arguments:
                            the spreadsheet online. Ignored if choosing
                            randomly.
   -q, --quiet              quiet mode - only print errors.
+  -m, --memory             Open the spreadsheet online basedon the previous
+                           call to next albumsand quit. This is much faster
+                           sinceit doesn't require an API call(the line stored
+                           in '.prev_call')
   --csv                    Generates a CSV file without any scores/'listened
                            on' dates.
 ```
