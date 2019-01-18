@@ -92,12 +92,12 @@ def csv_and_exit(values):
             print(f"{csv_fullpath} already exists, overwrite it?", end=" ", file=sys.stderr)
             user_response = input().strip()
             if not strtobool(user_response):
-                sys.exit(2)
+                sys.exit(1)
         except ValueError:
             print(f"Could not interpret '{user_response}' as a response. \n" +
                   "True values are y, yes, t, true, on and 1; false values are n, no, f, false, off and 0.",
                   file=sys.stderr)
-            sys.exit(2)
+            sys.exit(1)
 
     values = list(list(chain(row[:3], [row[4]], row[6:])) for row in values)
 
@@ -126,7 +126,7 @@ def get_credentials():
     credential_dir = os.path.join(os.path.expanduser('~'), '.credentials')
     if not os.path.exists(credential_dir):
         print('Credentials have not been setup properly. Run setup.py', file=sys.stderr)
-        sys.exit(3)
+        sys.exit(1)
     credential_path = os.path.join(
                 credential_dir, 'sheets.googleapis.com-python-nextalbums.json')
     store = Storage(credential_path)
@@ -135,7 +135,7 @@ def get_credentials():
         print('Credentials have not been setup properly. Run setup.py.\n' +
               'If the problem persists, delete {0} and run setup.py again.'.format(
                credential_path), file=sys.stderr)
-        sys.exit(3)
+        sys.exit(1)
     return credentials
 
 if __name__ == "__main__":
