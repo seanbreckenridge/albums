@@ -149,7 +149,7 @@ if __name__ == "__main__":
             webbrowser.open("https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
             .format(spreadsheet_id, pageId, prev_album_cell))
         except: # no previous call
-            pass
+            open_in_browser = True # failed to open, use API
             
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
