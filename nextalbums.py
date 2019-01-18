@@ -69,7 +69,7 @@ def parse_command_line_args():
             print("Count must be bigger than 0.", file=sys.stderr)
             sys.exit(1)
     if args.memory:
-        args.open = True
+        args.open = False # don't open twice
         args.quiet = True
     # redirect stdout to os.devnull if quiet mode is activated:
     if args.quiet:
@@ -148,7 +148,6 @@ if __name__ == "__main__":
                 prev_album_cell = prev_f.read().strip()
             webbrowser.open("https://docs.google.com/spreadsheets/d/{0}/edit#gid={1}&range=A{2}"
             .format(spreadsheet_id, pageId, prev_album_cell))
-            sys.exit(1)
         except: # no previous call
             pass
             
