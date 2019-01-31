@@ -29,8 +29,6 @@ You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with simi
 
 A `python3` script used to interact with the sheets document and maintain `spreadsheets.csv`.
 
-Help:
-
 ```
 usage: python3 nextalbums.py [-h] [-c COUNT] [-r] [-o] [-q] [-m] [--csv]
 
@@ -78,6 +76,14 @@ $ python3 nextalbums.py -qo
 
 Dependencies: `pip3 install --user --upgrade google-api-python-client prettytable oauth2client discogs_client termcolor`
 
-If you want to run the python files on your own system, you'd have to change the `spreadsheet_id` [here](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L23) (the id is the long string after `/d/` in the URL when you're editing it) to your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661) (you can create a spreadsheet on your own google account and ⌘A→ ⌘C→⌘V all of it), edit the [pageId](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L24) (the number after `edit#gid=` when on the google sheets URL), run `setup.py`, and create a file `discogs_token.json` in the root directory (info can be found [here](https://www.discogs.com/developers/), register [here](https://www.discogs.com/settings/developers)) with contents similar to:
+If you want to run the python files on your own system, you'd have to
 
-`{"token": "FDJjksdfJkJFDNMoiweiIRWkj", "user_agent": "yourUserNameSecret/1.0"}`
+1. Change the `spreadsheet_id` [here](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L23) (the id is the long string after `/d/` in the URL when you're editing it) to your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661) (you can create a spreadsheet on your own google account and ⌘A→ ⌘C→⌘V all of it). 
+
+2. Edit the [pageId](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L24) (the number after `edit#gid=` when on the google sheets URL)
+
+3. Create a file named `client_secret.json` in the root directory which contains your credentials for a google sheets OAuth connection. [Tutorial here](https://console.developers.google.com); download your created credentials from [here](https://console.developers.google.com/apis/credentials)
+
+4. Run `setup.py`
+
+5. (If you want to add albums and validate them with `discogs_update.py`) Create a file `discogs_token.json` in the root directory (info can be found [here](https://www.discogs.com/developers/), register [here](https://www.discogs.com/settings/developers)) with contents similar to: `{"token": "FDJjksdfJkJFDNMoiweiIRWkj", "user_agent": "yourUserNameSecret/1.0"}`
