@@ -46,7 +46,7 @@ optional arguments:
   -q, --quiet              quiet mode - only print errors.
   -m, --memory             Open the spreadsheet online basedon the previous
                            call to next albumsand quit. This is much faster
-                           sinceit doesn't require an API call(the line stored
+                           since it doesn't require an API call(the line stored
                            in '.prev_call')
   --csv                    Generates a CSV file without any scores/'listened
                            on' dates.

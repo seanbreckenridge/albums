@@ -54,7 +54,7 @@ def parse_command_line_args():
     parser.add_argument("-m", "--memory", action="store_true",
                         help="Open the spreadsheet online based" +
                         "on the previous call to next albums" +
-                        "and quit. This is much faster since" +
+                        "and quit. This is much faster since " +
                         "it doesn't require an API call" +
                         "(the line stored in '.prev_call')")
     parser.add_argument("--csv", action="store_true",
