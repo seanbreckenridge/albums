@@ -341,7 +341,7 @@ def main():
     reasons_table = autoincrement_analog()
     genres_table = autoincrement_analog()
     styles_table = autoincrement_analog()
-    user_agent, token = discogs_token(get_from_parent_dir("discogs_token.json"))
+    user_agent, token = discogs_token(get_from_parent_dir("discogs_token.yaml"))
     d_Client = discogs_client.Client(user_agent, user_token=token)
 
     tables_file = SQL_dir("base_tables.sql")

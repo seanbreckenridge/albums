@@ -4,10 +4,10 @@ import os
 import traceback
 import argparse
 from urllib.parse import urlparse
-from json import load
 from time import sleep
 
 import httplib2
+import yaml
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
@@ -22,13 +22,13 @@ d_Client = None
 update_threshold = 10   # ends the program and updates after these many updates
 update_count = 0
 attempt_to_resolve_to_master = False
-token_filename = os.path.abspath(os.path.join(os.path.dirname(__file__), "discogs_token.json"))
+token_filename = os.path.abspath(os.path.join(os.path.dirname(__file__), "discogs_token.yaml"))
 
 
 def discogs_token(filename):
     """Load User-Agent and token from json file."""
     with open(filename) as f:
-        discogs_cred = load(f)
+        discogs_cred = yaml.load(f)
     return discogs_cred["user_agent"], discogs_cred["token"]
 
 
