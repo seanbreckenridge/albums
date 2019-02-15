@@ -200,6 +200,22 @@ def fix_rows(values):
     return values
 
 
+def add_description(values, file, description):
+    """Given a file handle that contains discogs links that are already on the spreadsheet, and a description, adds the description to the 'Reason' column of each row."""
+    links = file.read().strip().splitlines()
+    for row in values[1:]:
+        discogs_link = row[7]
+        reasons = row[5]
+        # if this is on the spreadsheet
+        if discogs_link in links:
+            # if this was on the spreadsheet because I added it manually
+            if reasons.lower() in ["manual", "relation", "recommendation"]:
+                row[5] = description
+            # if this has other reasons for being on the spreadsheet
+            else:
+                row[5] += ", {}".format(description)
+    return values
+
 def get_values(credentials):
     """Gets the values from the spreadsheet"""
     http = credentials.authorize(httplib2.Http())
@@ -223,8 +239,8 @@ def update_values(values, credentials):
         },
         {
             # Album Artwork, Discogs Link, Artist ID(s), Genre, Style, Credits (ID)
-            'range': "Music!G1:L{}".format(no_of_rows),
-            'values': [vals[6:] for vals in values]
+            'range': "Music!F1:L{}".format(no_of_rows),
+            'values': [vals[5:] for vals in values]
         }
     ]
     update_body = {
@@ -241,14 +257,21 @@ def checkargs():
     global attempt_to_resolve_to_master
     parser = argparse.ArgumentParser()
     parser.add_argument("-r", "--resolve-to-master", action="store_true", default=False, help="Check each release to see if it has a master, and replace it with master if it exists.")
+    parser.add_argument("-a", "--add-links", type=argparse.FileType('r', encoding='utf-8'), help="Takes a file as input, which contains clean discogs links (e.g. https://www.discogs.com/master/234823) seperated by newlines; if those already exist on the spreadsheet, adds description to the reason.")
+    parser.add_argument("-d", "--description", help="The description for the file given by --add-links")
     args = parser.parse_args()
+    if args.add_links:
+        if not args.description:
+            print("You provided a file with links but didn't provide a description.")
+            sys.exit(1)
     if args.resolve_to_master:
         attempt_to_resolve_to_master = True
+    return args.add_links, args.description
 
 
 def main():
     global d_Client
-    checkargs()
+    file, desc = checkargs()
     user_agent, token = discogs_token(token_filename)
     d_Client = discogs_client.Client(user_agent, user_token=token)
     credentials = get_credentials()
@@ -257,6 +280,8 @@ def main():
         print("No values returned")
     else:
         values = fix_rows(values)
+        if file is not None:
+            values = add_description(values, file, desc)
         response = update_values(values, credentials)
         print("Updated {} cells.".format(response["totalUpdatedCells"]))
 
