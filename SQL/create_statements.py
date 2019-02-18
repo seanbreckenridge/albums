@@ -2,7 +2,6 @@
 
 import sys
 import re
-import json
 import argparse
 import os
 from time import sleep
@@ -14,6 +13,7 @@ from oauth2client.file import Storage
 from googleapiclient import discovery
 import discogs_client
 import xlrd
+import yaml
 
 
 def get_from_parent_dir(path):
@@ -72,29 +72,30 @@ class autoincrement_analog:
 
 class cache:
     """class to manage caching API requests for artist names"""
-    def __init__(self, json_path):
-        self.jsonpath = json_path
+    def __init__(self, yaml_path):
+        self.yaml_path = yaml_path
         self.write_to_cache_const = 25
         self.write_to_cache_periodically = self.write_to_cache_const
-        if not os.path.exists(self.jsonpath):
-            open(self.jsonpath, 'a').close()
-        with open(self.jsonpath, 'r') as js_f:
+        if not os.path.exists(self.yaml_path):
+            open(self.yaml_path, 'a').close()
+        with open(self.yaml_path, 'r') as js_f:
             try:
-                self.items = json.load(js_f)
+                self.items = yaml.load(js_f)
                 print("[Cache] {} items loaded from cache.".format(len(self.items)))
-            except json.JSONDecodeError:  # file is empty or broken
+            except:  # file is empty or broken
+                print("[Cache] Could not load items.")
                 self.items = {}
 
-    def update_json_file(self):
-        with open(self.jsonpath, 'w') as f:
-            json.dump(self.items, f)
+    def update_yaml_file(self):
+        with open(self.yaml_path, 'w') as f:
+            yaml.dump(self.items, f, default_flow_style=False)
 
     def download_name(self, id):
         global d_Client
         self.write_to_cache_periodically -= 1
         if self.write_to_cache_periodically < 0:
             self.write_to_cache_periodically = self.write_to_cache_const
-            self.update_json_file()
+            self.update_yaml_file()
         print("[Discogs] Downloading name for id {}".format(id))
         sleep(2)
         # change artist names like Sugar (3) to Sugar. Discogs has these names because there may be duplicates for an artist name
@@ -102,21 +103,21 @@ class cache:
 
     def __contains__(self, id):
         """defines the 'in' keyword on cache."""
-        return str(id) in self.items
+        return int(id) in self.items
 
     def get(self, id):
         if str(id) == "194":  # Various Artists; this doesnt have a page on discogs, its just a placeholder
-            self.items["194"] = "Various"
-            return self.items["194"]
+            self.items[194] = "Various"
+            return self.items[194]
         if self.__contains__(id):
             print("[Cache] Found name for id {} in cache".format(id))
-            return self.items[str(id)]
+            return self.items[int(id)]
         else:
-            self.items[str(id)] = self.download_name(id)
-            return self.items[str(id)]
+            self.items[int(id)] = self.download_name(id)
+            return self.items[int(id)]
 
     def put(self, id, name):
-        self.items[str(id)] = str(name)
+        self.items[int(id)] = str(name)
 
     def __iter__(self):
         return self.items.__iter__()
@@ -205,7 +206,7 @@ def statements(albums, use_score, base_table_file, statement_file):
     global reasons_table
     global styles_table
     global genres_table
-    artist_cache.update_json_file()
+    artist_cache.update_yaml_file()
 
     statements = []  # SQL statements that would add data to the database
 
@@ -326,8 +327,8 @@ def main():
 
     args = parser.parse_args()
 
-    artist_cache_filepath = SQL_dir("artist_cache.json")
-    score_artist_cache_filepath = SQL_dir("score_artist_cache.json")
+    artist_cache_filepath = SQL_dir("artist_cache.yaml")
+    score_artist_cache_filepath = SQL_dir("score_artist_cache.yaml")
 
     credentials = get_credentials()
     values = get_values(credentials)
@@ -341,6 +342,7 @@ def main():
             if id not in artist_cache:
                 artist_cache.put(id, base_cache.get(id))
     else:
+        print("Loading base artist cache...")
         artist_cache = cache(artist_cache_filepath)
     reasons_table = autoincrement_analog()
     genres_table = autoincrement_analog()
