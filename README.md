@@ -86,7 +86,7 @@ If you want to run the python files on your own system, you'd have to
 
 4. Run `setup.py`
 
-5. (If you want to add albums and validate them with `discogs_update.py`) Create a file `discogs_token.yaml` in the root directory (info can be found [here](https://www.discogs.com/developers/), register [here](https://www.discogs.com/settings/developers)) with contents similar to: 
+5. (If you want to add albums and validate them with `discogs_update.py`) Create a file `discogs_token.yaml` in the root directory (info can be found [here](https://www.discogs.com/developers/), token [here](https://www.discogs.com/settings/developers)) with contents similar to: 
 
 ```
 user_agent: myPython3DiscogsClient/1.0
