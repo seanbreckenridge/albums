@@ -38,9 +38,9 @@ def parse_command_line_args():
         prog='python3 nextalbums.py',
         description="List the Next Albums to listen to.",
         formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
-    parser.add_argument("-c", "--count", type=int,
+    parser.add_argument("-n", type=int,
                         help="Changes the number of albums to return." +
-                        " Default is 10.")
+                        " Default is 10.", default=10)
     parser.add_argument("-r", "--random", action="store_true",
                         help="Chooses random albums instead " +
                         "of listing chronologically.")
@@ -62,12 +62,9 @@ def parse_command_line_args():
                         "any scores/'listened on' dates.")
     args = parser.parse_args()
     #  make sure count is valid
-    if args.count is None:
-        args.count = 10
-    else:
-        if args.count < 1:
-            print("Count must be bigger than 0.", file=sys.stderr)
-            sys.exit(1)
+    if args.n < 1:
+        print("Count must be bigger than 0.", file=sys.stderr)
+        sys.exit(1)
     if args.memory:
         args.open = False # don't open twice
         args.quiet = True
@@ -75,7 +72,7 @@ def parse_command_line_args():
     if args.quiet:
         sys.stdout = open(os.devnull, 'w')
     
-    return args.count, args.random, args.open, args.csv, args.memory
+    return args.n, args.random, args.open, args.csv, args.memory
 
 
 def csv_and_exit(values):

@@ -30,33 +30,28 @@ You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with simi
 A `python3` script used to interact with the sheets document and maintain `spreadsheets.csv`.
 
 ```
-usage: python3 nextalbums.py [-h] [-c COUNT] [-r] [-o] [-q] [-m] [--csv]
+usage: python3 nextalbums.py [-h] [-n N] [-r] [-o] [-q] [-m] [--csv]
 
 List the Next Albums to listen to.
 
 optional arguments:
-  -h, --help               show this help message and exit
-  -c COUNT, --count COUNT  Changes the number of albums to return. Default is
-                           10.
-  -r, --random             Chooses random albums instead of listing
-                           chronologically.
-  -o, --open               Open the cell that corresponds to the next album in
-                           the spreadsheet online. Ignored if choosing
-                           randomly.
-  -q, --quiet              quiet mode - only print errors.
-  -m, --memory             Open the spreadsheet online basedon the previous
-                           call to next albumsand quit. This is much faster
-                           since it doesn't require an API call(the line stored
-                           in '.prev_call')
-  --csv                    Generates a CSV file without any scores/'listened
-                           on' dates.
+  -h, --help    show this help message and exit
+  -n N          Changes the number of albums to return. Default is 10.
+  -r, --random  Chooses random albums instead of listing chronologically.
+  -o, --open    Open the cell that corresponds to the next album in the
+                spreadsheet online. Ignored if choosing randomly.
+  -q, --quiet   quiet mode - only print errors.
+  -m, --memory  Open the spreadsheet online basedon the previous call to next
+                albumsand quit. This is much faster since it doesn't require
+                an API call(the line stored in '.prev_call')
+  --csv         Generates a CSV file without any scores/'listened on' dates.
 ```
 
 ###### Examples:
 
 Return the next 7 albums to listen to (chronologically), and open the cell that corresponds to <i>September of My Years</i> in a web browser:
 ```
-$ python3 nextalbums.py -oc 7
+$ python3 nextalbums.py -on 7
 +----------------------------+----------------+------+
 | Album                      | Artist         | Year |
 +----------------------------+----------------+------+
