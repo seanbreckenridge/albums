@@ -52,8 +52,8 @@ def parse_command_line_args():
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="quiet mode - only print errors.")
     parser.add_argument("-m", "--memory", action="store_true",
-                        help="Open the spreadsheet online based" +
-                        "on the previous call to next albums" +
+                        help="Open the spreadsheet online based " +
+                        "on the previous call to next albums " +
                         "and quit. This is much faster since " +
                         "it doesn't require an API call" +
                         "(the line stored in '.prev_call')")

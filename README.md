@@ -41,8 +41,8 @@ optional arguments:
   -o, --open    Open the cell that corresponds to the next album in the
                 spreadsheet online. Ignored if choosing randomly.
   -q, --quiet   quiet mode - only print errors.
-  -m, --memory  Open the spreadsheet online basedon the previous call to next
-                albumsand quit. This is much faster since it doesn't require
+  -m, --memory  Open the spreadsheet online based on the previous call to next
+                albums and quit. This is much faster since it doesn't require
                 an API call(the line stored in '.prev_call')
   --csv         Generates a CSV file without any scores/'listened on' dates.
 ```
