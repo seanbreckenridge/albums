@@ -155,11 +155,15 @@ class album:
         self.cover_artist = artists_on_album_cover
         self.year = int(year)
         if date.strip():
+            if self.score is None:
+                print("WARNING: {} ({}) has no 'score' but has a 'listened on' date".format(self.album_name, self.cover_artist))
             self.listened_on = xlrd.xldate_as_datetime(int(date), 0)
             self.listened_on = "{year}-{month}-{day}".format(year=self.listened_on.year,
                                                              month=self.listened_on.month,
                                                              day=self.listened_on.day)
         else:
+            if self.score is not None:
+                print("WARNING: {} ({}) has no 'listened on' date but has a 'score'".format(self.album_name, self.cover_artist))
             self.listened_on = None
         self.album_artwork = re.search("https?:\/\/[^\"]+", album_artwork)
         if self.album_artwork:
