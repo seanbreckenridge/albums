@@ -13,7 +13,7 @@ You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with simi
 
 ##### Sources for `spreadsheet.csv`:
 
-* [1001 Albums You Must Hear Before You Die](https://en.wikipedia.org/wiki/1001_Albums_You_Must_Hear_Before_You_Die). I attempted to include any albums that have ever been in the book, multiple versions with different lineups have come out in 2005, 2008, 2010, 2011, and 2016.
+* [1001 Albums You Must Hear Before You Die](https://en.wikipedia.org/wiki/1001_Albums_You_Must_Hear_Before_You_Die). There have been multiple versions of the book, so the number of albums on the list because of this is about 1070.
 
 * [Rolling Stone's 500 Greatest Albums of All Time](https://en.wikipedia.org/wiki/Rolling_Stone%27s_500_Greatest_Albums_of_All_Time). Likewise, the count here is 516, due to multiple versions.
 
@@ -24,6 +24,14 @@ You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with simi
     * [Favorite Rap/Hip-Hop Album](https://en.wikipedia.org/wiki/American_Music_Award_for_Favorite_Rap/Hip-Hop_Album)
 
 * Wins from a multitude (though not all) Grammy Awards, listed [here](src/Grammy).
+
+* [NME's The 500 Greatest ALbums of All Time](https://en.wikipedia.org/wiki/NME's_The_500_Greatest_Albums_of_All_Time)
+
+* [Mercury Prize](https://en.wikipedia.org/wiki/Mercury_Prize)
+
+* [Pickfork Album of the Year](https://en.wikipedia.org/wiki/Pitchfork_(website)#Pitchfork_Album_of_the_Year)
+
+* Brit Awards, both the [British](https://en.wikipedia.org/wiki/Brit_Award_for_British_Album_of_the_Year) and [International](https://en.wikipedia.org/wiki/Brit_Award_for_International_Album) albums of the year.
 
 ##### `nextalbums.py`
 
