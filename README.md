@@ -29,7 +29,7 @@ You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with simi
 
 * [Mercury Prize](https://en.wikipedia.org/wiki/Mercury_Prize)
 
-* [Pickfork Album of the Year](https://en.wikipedia.org/wiki/Pitchfork_(website)#Pitchfork_Album_of_the_Year)
+* [Pitchfork Album of the Year](https://en.wikipedia.org/wiki/Pitchfork_(website)#Pitchfork_Album_of_the_Year)
 
 * Brit Awards, both the [British](https://en.wikipedia.org/wiki/Brit_Award_for_British_Album_of_the_Year) and [International](https://en.wikipedia.org/wiki/Brit_Award_for_International_Album) albums of the year.
 
