@@ -25,7 +25,7 @@ You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with simi
 
 * Wins from a multitude (though not all) Grammy Awards, listed [here](src/Grammy).
 
-* [NME's The 500 Greatest ALbums of All Time](https://en.wikipedia.org/wiki/NME's_The_500_Greatest_Albums_of_All_Time)
+* [NME's The 500 Greatest Albums of All Time](https://en.wikipedia.org/wiki/NME's_The_500_Greatest_Albums_of_All_Time)
 
 * [Mercury Prize](https://en.wikipedia.org/wiki/Mercury_Prize)
 
