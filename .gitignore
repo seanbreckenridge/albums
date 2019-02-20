@@ -16,3 +16,4 @@ __pycache__/
 /src/scripts
 /discogs_token.*
 .prev_call
+/src/_sql_cred.yaml
