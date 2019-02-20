@@ -6,17 +6,13 @@ import argparse
 from urllib.parse import urlparse
 from time import sleep
 
-import httplib2
 import yaml
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
-from googleapiclient import discovery
 import discogs_client
 from distutils.util import strtobool
 from termcolor import colored
+from googleapiclient import discovery
 
-from nextalbums import get_credentials, spreadsheet_id
+from nextalbums import get_credentials, spreadsheet_id, get_values
 
 d_Client = None
 update_threshold = 10   # ends the program and updates after these many updates
@@ -216,15 +212,6 @@ def add_description(values, file, description):
                 row[5] += ", {}".format(description)
     return values
 
-def get_values(credentials):
-    """Gets the values from the spreadsheet"""
-    http = credentials.authorize(httplib2.Http())
-    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?version=v4')
-    service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
-    # valueRendorOption = FORMULA is needed so we can keep images. Cells are blank or else.
-    result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range="A1:L", valueRenderOption="FORMULA").execute()
-    return result.get('values', [])
-
 
 def update_values(values, credentials):
     """Updates the values on the spreadsheet"""
@@ -275,7 +262,7 @@ def main():
     user_agent, token = discogs_token(token_filename)
     d_Client = discogs_client.Client(user_agent, user_token=token)
     credentials = get_credentials()
-    values = get_values(credentials)
+    values = get_values(credentials, "A1:L", "FORMULA")
     if len(values) == 0:
         print("No values returned")
     else:
