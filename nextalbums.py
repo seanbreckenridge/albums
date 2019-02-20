@@ -95,7 +95,7 @@ def get_values(credentials, range, valueRenderOption):
     service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
     result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range, valueRenderOption=valueRenderOption).execute()
     return result.get('values', [])
-    
+
 
 if __name__ == "__main__":
 
