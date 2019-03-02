@@ -137,7 +137,10 @@ def update_row_with_discogs_data(row, max_length):
     if row[3] == 0:  # discogs API returns 0 if year was unknown for master release
         print(f"Warning: Failed to get year for {id}: {row[1]}. Using old year ({original_row[3]}).")
         row[3] = original_row[3]
-    row[6] = '=IMAGE("{}")'.format(rel.images[0]["uri"])  # Image
+    if rel.images is not None:
+        row[6] = '=IMAGE("{}")'.format(rel.images[0]["uri"])  # Image
+    else:
+        row[6] = ""
     row[9] = ", ".join(sorted(set(rel.genres if rel.genres is not None else [])))  # Genres
     row[10] = ", ".join(sorted(set(rel.styles if rel.styles is not None else [])))  # Style
     artist_ids = set([person.id for person in rel.credits if person.id != 0])
