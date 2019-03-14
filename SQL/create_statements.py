@@ -99,7 +99,12 @@ class cache:
         print("[Discogs] Downloading name for id {}".format(id))
         sleep(2)
         # change artist names like Sugar (3) to Sugar. Discogs has these names because there may be duplicates for an artist name
-        return re.sub(r"\(\d+\)$", "", d_Client.artist(int(id)).name).strip()
+        try:
+            return re.sub(r"\(\d+\)$", "", d_Client.artist(int(id)).name).strip()
+        except discogs_client.exceptions.HTTPError as couldnt_find_name:
+            print("Failed to name for download https://www.discogs.com/artist/{}".format(id))
+            print("This id should be removed from the credits cell, no way around this currently.")
+            sys.exit(1)
 
     def __contains__(self, id):
         """defines the 'in' keyword on cache."""
