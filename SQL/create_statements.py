@@ -80,7 +80,7 @@ class cache:
             open(self.yaml_path, 'a').close()
         with open(self.yaml_path, 'r') as js_f:
             try:
-                self.items = yaml.load(js_f)
+                self.items = yaml.load(js_f, Loader=yaml.FullLoader)
                 print("[Cache] {} items loaded from cache.".format(len(self.items)))
             except:  # file is empty or broken
                 print("[Cache] Could not load items.")

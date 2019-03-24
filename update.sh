@@ -13,7 +13,7 @@ cd SQL
 python3 create_statements.py
 python3 create_statements.py --use-scores
 # Read from YAML file
-USER=$(python3 -c "import yaml; print(yaml.load(open('../src/_sql_cred.yaml'))['user'])")
+USER=$(python3 -c "import yaml; print(yaml.load(open('../src/_sql_cred.yaml'), Loader=yaml.FullLoader)['user'])")
 echo "updating albums..."
 cat statements.sql | mysql -u "${USER}" -p # asks user for password
 echo "updating scorealbums..."

@@ -10,7 +10,7 @@ def create_connection(credential_file: str):
     
     # database credentials
     with open(credential_file, 'r') as c:
-        credentials = yaml.load(c)
+        credentials = yaml.load(c, Loader=yaml.FullLoader)
         
     db = MySQLdb.connect(host="localhost", user=credentials["user"],
                          passwd=credentials["passwd"], db="scorealbums")

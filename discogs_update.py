@@ -24,7 +24,7 @@ token_filename = os.path.abspath(os.path.join(os.path.dirname(__file__), "discog
 def discogs_token(filename):
     """Load User-Agent and token from json file."""
     with open(filename) as f:
-        discogs_cred = yaml.load(f)
+        discogs_cred = yaml.load(f, Loader=yaml.FullLoader)
     return discogs_cred["user_agent"], discogs_cred["token"]
 
 
