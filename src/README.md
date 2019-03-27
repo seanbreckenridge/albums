@@ -9,6 +9,4 @@ user: usernamehere
 passwd: passwordhere
 ```
 
-Dependencies: `pip3 install --user mysqlclient PyYAML`
-
 Run: `python3 _update_from_db.py`

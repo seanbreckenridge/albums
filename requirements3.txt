@@ -1,0 +1,8 @@
+mysqlclient
+PyYAML
+google-api-python-client
+prettytable
+oauth2client
+discogs_client
+termcolor
+xlrd

@@ -8,8 +8,6 @@ It can be run with a flag: `python3 create_statements.py --use-scores`, which ad
 
 Running it *without* the `--use-scores` flag is close to what `statements.csv` in the root directory chooses as valid albums - only albums that have won at least 1 award, disregarding any albums I added to the spreadsheet manually, by relation, or on a recommendation.
 
-Dependencies: `pip3 install --user --upgrade oauth2client xlrd google-api-python-client discogs_client`
-
 ##### Example Queries:
 
 Anything that's won a grammy award:

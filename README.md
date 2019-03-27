@@ -64,7 +64,7 @@ Don't print anything and open the cell that corresponds to the next album to lis
 $ python3 nextalbums.py -qo
 ```
 
-Dependencies: `pip3 install --user --upgrade google-api-python-client prettytable oauth2client discogs_client termcolor`
+Install Dependencies: `python3 -m pip install --user --upgrade -r requirements3.txt`
 
 #### Installation:
 
