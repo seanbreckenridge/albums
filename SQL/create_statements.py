@@ -176,7 +176,7 @@ class album:
             self.album_artwork = self.album_artwork.group(0)
         else:
             self.album_artwork = None
-            print("Warning. No Album Artwork extracted from {} for {}".format(album_artwork, album_name))
+            print("Warning. No Album Artwork extracted from '{}' for '{}'".format(album_artwork, album_name))
         self.discogs_url = discogs_url if discogs_url.strip() else None
 
         self.reason_id = reasons_table.add_comma_seperated_list(reasons)
