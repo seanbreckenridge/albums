@@ -13,7 +13,6 @@ __pycache__/
 
 # Project
 /client_secret.json
-/src/scripts
 /discogs_token.*
 .prev_call
 /src/_sql_cred.yaml
