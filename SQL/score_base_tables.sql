@@ -79,4 +79,3 @@ CREATE TABLE `AlbumStyle` (
 
 ALTER TABLE scorealbums.Album CONVERT TO CHARACTER SET utf8;
 ALTER TABLE scorealbums.Artist CONVERT TO CHARACTER SET utf8;
-
