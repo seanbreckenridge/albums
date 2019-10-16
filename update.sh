@@ -12,12 +12,10 @@ echo "Creating SQL statements..."
 cd SQL
 python3 create_statements.py
 python3 create_statements.py --use-scores
-# Read from YAML file
-USER=$(python3 -c "import yaml; print(yaml.load(open('../src/_sql_cred.yaml'), Loader=yaml.FullLoader)['user'])")
 echo "updating albums..."
-cat statements.sql | mysql -u "${USER}" -p # asks user for password
+cat statements.sql | sudo mysql
 echo "updating scorealbums..."
-cat score_statements.sql | mysql -u "${USER}" -p
+cat score_statements.sql | sudo mysql
 cd ../src
 echo "Updating src csv files..."
 python3 _update_from_db.py

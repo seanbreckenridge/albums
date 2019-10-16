@@ -4,16 +4,10 @@ import csv
 import operator
 
 import MySQLdb
-import yaml
 
-def create_connection(credential_file: str):
+def create_connection():
     
-    # database credentials
-    with open(credential_file, 'r') as c:
-        credentials = yaml.load(c, Loader=yaml.FullLoader)
-        
-    db = MySQLdb.connect(host="localhost", user=credentials["user"],
-                         passwd=credentials["passwd"], db="scorealbums")
+    db = MySQLdb.connect(host="localhost", db="scorealbums", user="sean", password="sean")
     return db
 
 
@@ -24,8 +18,7 @@ def write_csv(name, results):
 
 def main():
     
-    cred_file = os.path.join(os.path.dirname(__file__), "_sql_cred.yaml")
-    db = create_connection(cred_file)
+    db = create_connection()
     c = db.cursor()
     
     c.execute("SELECT ReasonID, Description FROM Reason")
