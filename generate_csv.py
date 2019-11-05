@@ -1,8 +1,6 @@
-import sys
 import os
 import re
 import csv
-from itertools import chain
 
 from nextalbums import get_credentials, get_values
 
