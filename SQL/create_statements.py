@@ -6,6 +6,7 @@ import argparse
 import os
 from time import sleep
 
+import httplib2
 from googleapiclient import discovery
 import discogs_client
 import xlrd
