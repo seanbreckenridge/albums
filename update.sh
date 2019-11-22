@@ -12,6 +12,7 @@ echo "Creating SQL statements..."
 cd SQL || exit
 python3 create_statements.py
 python3 create_statements.py --use-scores
+echo "(use sudo password)"
 echo "updating albums..."
 sudo cat statements.sql | sudo mysql
 echo "updating scorealbums..."
