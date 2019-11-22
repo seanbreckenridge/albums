@@ -7,7 +7,6 @@ from random import randint
 
 import httplib2
 from googleapiclient import discovery
-from oauth2client import client
 from oauth2client.file import Storage
 from prettytable import PrettyTable
 
@@ -75,15 +74,15 @@ def get_credentials():
     """
     credential_dir = os.path.join(os.path.expanduser('~'), '.credentials')
     if not os.path.exists(credential_dir):
-        print('Credentials have not been setup properly. Run setup.py', file=sys.stderr)
+        print('Credentials have not been setup properly. Run setup_credentials.py', file=sys.stderr)
         sys.exit(1)
     credential_path = os.path.join(
                 credential_dir, 'sheets.googleapis.com-python-nextalbums.json')
     store = Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
-        print('Credentials have not been setup properly. Run setup.py.\n' +
-              'If the problem persists, delete {0} and run setup.py again.'.format(
+        print('Credentials have not been setup properly. Run setup_credentials.py.\n' +
+              'If the problem persists, delete {0} and run setup_credentials.py again.'.format(
                credential_path), file=sys.stderr)
         sys.exit(1)
     return credentials

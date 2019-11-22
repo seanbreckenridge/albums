@@ -76,7 +76,7 @@ Install Dependencies: `python3 -m pip install --user --upgrade -r requirements3.
 
 4. Create a file named `client_secret.json` in the root directory which contains your credentials for a google sheets OAuth connection. [Tutorial here](https://console.developers.google.com); download your created credentials from [here](https://console.developers.google.com/apis/credentials)
 
-5. Run `setup.py`
+5. Run `setup_credentials.py`
 
 6. (If you want to add albums and validate them with `discogs_update.py`) Create a file `discogs_token.yaml` in the root directory (info can be found [here](https://www.discogs.com/developers/), token [here](https://www.discogs.com/settings/developers)) with contents similar to: 
 

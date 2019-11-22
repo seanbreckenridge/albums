@@ -60,14 +60,8 @@ def discogs_get(_type, id):
         return d_Client.master(id).main_release
     elif _type == "release":
         return d_Client.release(id)
-        sleep(2)
-        if rel.master is not None:
-            return rel.master.main_release
-        else:
-            print(f"Release {id} has no master release.")
-            return rel
     else:
-        raise Excepion(f"Unknown discogs request type: {_type}")
+        raise RuntimeError(f"Unknown discogs request type: {_type}")
 
 
 def fix_discogs_link(link):
@@ -175,7 +169,7 @@ def fix_rows(values):
 
         try:
             values[index] = _fix_row(row, max_no_of_columns)
-        except discogs_client.exceptions.HTTPError as discogs_api_limit:
+        except discogs_client.exceptions.HTTPError:
             if '429' in str(discogs_client.exceptions.HTTPError):
                 wait_time = 30
                 print(f"[Discogs] API Limit Reached. Waiting {wait_time} seconds...")

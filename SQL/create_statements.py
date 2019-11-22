@@ -6,10 +6,6 @@ import argparse
 import os
 from time import sleep
 
-import httplib2
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
 from googleapiclient import discovery
 import discogs_client
 import xlrd
