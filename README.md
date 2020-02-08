@@ -1,7 +1,8 @@
 ### albums
+
 A collection of CSV/SQL files containing popular/acclaimed albums, used to make a inordinate list of albums to listen to.
 
-This is a personal project of mine, but I thought I'd leave these files up here in case anyone wanted to use them.
+This is a personal project of mine, but I thought I'd leave these files up here in case anyone wanted to use them. This is pretty old project and the python/generation process its pretty scattered (see `update.sh`), but the CSV/SQL files are very usable.
 
 `python3 discogs_update.py` uses the [Discogs API](https://github.com/discogs/discogs_client) to fetch and validate the data on [the spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661).
 
