@@ -14,9 +14,9 @@ python3 create_statements.py
 python3 create_statements.py --use-scores
 echo "(use sudo password)"
 echo "updating albums..."
-sudo cat statements.sql | sudo mysql
+sudo mysql < statements.sql
 echo "updating scorealbums..."
-sudo cat score_statements.sql | sudo mysql
+sudo mysql < score_statements.sql
 cd ../src || exit
 echo "Updating src csv files..."
 python3 _update_from_db.py
