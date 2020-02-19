@@ -9,8 +9,9 @@ alias favorite_albums='python3 ~/code/albums/favorites.py > /tmp/favorites.csv &
 
 import sys
 import os
+
 this_dir = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(this_dir, 'src'))
+sys.path.insert(0, os.path.join(this_dir, "src"))
 
 import csv
 
@@ -19,7 +20,8 @@ from typing import List, Sequence
 
 from _update_from_db import create_connection
 
-def format_row(row_tuple: Sequence) -> List: 
+
+def format_row(row_tuple: Sequence) -> List:
     """
     Converts the tuple from the db to printable list
     """
@@ -31,17 +33,21 @@ def format_row(row_tuple: Sequence) -> List:
             row_l[i] = datetime.strftime(row_l[i], "%Y-%m-%d")
     return row_l
 
+
 def main():
     db = create_connection()
     c = db.cursor()
-    c.execute("SELECT Album.Name, Album.CoverArtists, Album.Year, Album.Score,\
-Album.ListenedOn FROM Album WHERE SCORE IS NOT NULL ORDER BY Album.Score DESC")
-    rows = [('Name', 'Artists', 'Year', 'Score', 'ListenedOn')]
+    c.execute(
+        "SELECT Album.Name, Album.CoverArtists, Album.Year, Album.Score,\
+Album.ListenedOn FROM Album WHERE SCORE IS NOT NULL ORDER BY Album.Score DESC"
+    )
+    rows = [("Name", "Artists", "Year", "Score", "ListenedOn")]
     rows.extend(list(map(format_row, c.fetchall())))
 
     writer = csv.writer(sys.stdout, delimiter=",", quoting=csv.QUOTE_ALL)
     for r in rows:
         writer.writerow(r)
+
 
 if __name__ == "__main__":
     main()
