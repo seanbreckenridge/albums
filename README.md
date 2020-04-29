@@ -10,6 +10,8 @@ This is a personal project of mine, but I thought I'd leave these files up here 
 
 You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with similar data to `spreadsheet.csv`. `spreadsheet.csv`, the files for each reason in `src` and `SQL/statements.sql`/`SQL/score_statements` will be updated whenever I add something to the list.
 
+[`server`](./server) includes a flask server which grabs current information from spreadsheet. WIP to add filtering to the endpoint.
+
 #### Sources for `spreadsheet.csv`:
 
 You can see the full list of sources for the spreadsheet in [`src`](src).
