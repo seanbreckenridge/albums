@@ -3,6 +3,9 @@
 import sys
 import os
 import re
+import time
+import logging
+from datetime import datetime
 from typing import List, Any
 
 import httplib2
@@ -20,6 +23,10 @@ sys.path.insert(0, root_dir)
 from nextalbums import get_credentials, spreadsheet_id
 
 app = Flask(__name__)
+
+logging.basicConfig()
+logger = logging.getLogger('waitress')
+logger.setLevel(logging.INFO)
 
 sql_dir = os.path.join(root_dir, "SQL")
 
@@ -167,6 +174,8 @@ def request_albums() -> List[album]:
 @app.route("/", methods=["GET", "POST"])
 def album_route():
 
+    logger.info("{} '/' {}".format(datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
+
     # parse request args
     try:
         limit = int(request.args.get('limit', 50))
@@ -198,6 +207,9 @@ def album_route():
 # expects get data like: /arists?ids=40,2042,234
 @app.route("/artists", methods=["GET"])
 def artist_names():
+
+    logger.info("{} '/' {}".format(datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
+
     # update git repo
     g = git.cmd.Git(root_dir)
     g.pull()
