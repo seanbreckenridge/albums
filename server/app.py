@@ -1,9 +1,6 @@
-"""Creates MySQL compliant SQL statements to create a schema with current album data from the spreadsheet"""
-
 import sys
 import os
 import re
-import time
 import logging
 from datetime import datetime
 from typing import List, Any
@@ -174,7 +171,8 @@ def request_albums() -> List[album]:
 @app.route("/", methods=["GET", "POST"])
 def album_route():
 
-    logger.info("{} '/' {}".format(datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
+    logger.info("{} '/' {}".format(
+        datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
 
     # parse request args
     try:
@@ -208,7 +206,8 @@ def album_route():
 @app.route("/artists", methods=["GET"])
 def artist_names():
 
-    logger.info("{} '/' {}".format(datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
+    logger.info("{} '/' {}".format(
+        datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
 
     # update git repo
     g = git.cmd.Git(root_dir)
@@ -222,4 +221,7 @@ def artist_names():
 
 
 if __name__ == "__main__":
+    # since this hoted on the public internet, and is only going to be used
+    # by other applications on the server, to query information,
+    # this uses waitress instead of something more complex
     serve(app, host='0.0.0.0', port=os.environ.get("ALBUM_PORT", 8083))
