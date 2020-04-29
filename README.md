@@ -22,7 +22,8 @@ sort=asc|desc, defeault desc
 ```
 ```
 '/artist' endpoint GET arg:
-id=id1,id2,id3,id4
+ids=id1,id2,id3,id4
+(discogs artist IDs, which are returned in the response of '/')
 ```
 
 #### Sources for `spreadsheet.csv`:
