@@ -168,7 +168,7 @@ def request_albums() -> List[album]:
 # limit=int
 # orderby=score|listened_on
 # sort=asc|desc
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def album_route():
 
     logger.info("{} '/' {}".format(
@@ -203,7 +203,7 @@ def album_route():
 
 # route to get names for discord artist IDs
 # expects get data like: /arists?ids=40,2042,234
-@app.route("/artists", methods=["GET"])
+@app.route("/artists")
 def artist_names():
 
     logger.info("{} '/' {}".format(
