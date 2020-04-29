@@ -1,4 +1,5 @@
 tags*
+/Pipfile
 
 # Mac
 *.DS_Store

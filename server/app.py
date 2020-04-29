@@ -8,28 +8,42 @@ from typing import List, Any
 import httplib2
 import xlrd
 import yaml
+import git
 from googleapiclient import discovery
-from flask import Flask, jsonify
-
-app = Flask(__name__)
+from flask import Flask, jsonify, request
+from waitress import serve
 
 this_dir = os.path.dirname(__file__)
 root_dir = os.path.join(this_dir, os.pardir)
-sql_dir = os.path.join(root_dir, "SQL")
-
-arist_data = []
-
-
-def load_artist_data():
-    global arist_data
-    with open(os.path.join(sql_dir, "score_artist_cache.yaml")) as data:
-        artist_data = yaml.load(data, Loader=yaml.FullLoader)
-    return artist_data
-
-
 sys.path.insert(0, root_dir)
 
 from nextalbums import get_credentials, spreadsheet_id
+
+app = Flask(__name__)
+
+sql_dir = os.path.join(root_dir, "SQL")
+
+cache_file = os.path.join(sql_dir, "score_artist_cache.yaml")
+
+
+class FileCache:
+    def __init__(self, filename):
+        self.filename = filename
+        self.data = None
+        self.read_at = None
+
+    def read(self):
+        with open(self.filename) as data:
+            self.data = yaml.load(data, Loader=yaml.FullLoader)
+        self.read_at = int(os.path.getmtime(self.filename))
+
+    def get(self):
+        if self.read_at != int(os.path.getmtime(self.filename)):
+            self.read()
+        return self.data
+
+
+artist_cache: FileCache = FileCache(cache_file)
 
 
 def make_request() -> List[List[Any]]:
@@ -145,11 +159,55 @@ def request_albums() -> List[album]:
         return []
 
 
+# route to get albums I've listened to with different filters
+# all are optional, see defaults below
+# limit=int
+# orderby=score|listened_on
+# sort=asc|desc
 @app.route("/", methods=["GET", "POST"])
-def handler():
+def album_route():
+
+    # parse request args
+    try:
+        limit = int(request.args.get('limit', 50))
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    sort_by = request.args.get('orderby', 'score')
+    order = request.args.get('sort', 'desc')
+    if sort_by not in ['score', 'listened_on']:
+        return jsonify({"error":
+                        f"{sort_by} not in 'score', 'listened_on'"}), 400
+    if order not in ['asc', 'desc']:
+        return jsonify({"error": f"{order} not in 'asc', 'desc'"}), 400
+
+    # request albums from google api
     albums = request_albums()
-    return jsonify([a.to_dict() for a in albums])
+
+    # sort according to flags passed
+    albums = list(filter(lambda o: o.score is not None, albums))
+    sort_order: bool = order != 'asc'
+    if sort_by == "score":
+        albums.sort(key=lambda o: o.score, reverse=sort_order)
+    else:
+        albums.sort(key=lambda o: o.listened_on, reverse=sort_order)
+
+    return jsonify([a.to_dict() for a in albums[:limit]])
+
+
+# route to get names for discord artist IDs
+# expects get data like: /arists?ids=40,2042,234
+@app.route("/artists", methods=["GET"])
+def artist_names():
+    # update git repo
+    g = git.cmd.Git(root_dir)
+    g.pull()
+    # get cache file information
+    acache = artist_cache.get()
+    # parse ids from GET arg
+    requested_ids = map(int, request.args["ids"].split(","))
+    # respond with names
+    return jsonify({aid: acache.get(aid) for aid in requested_ids})
 
 
 if __name__ == "__main__":
-    app.run()
+    serve(app, host='0.0.0.0', port=os.environ.get("ALBUM_PORT", 8083))
