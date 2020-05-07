@@ -221,7 +221,8 @@ def artist_names():
 
 
 if __name__ == "__main__":
-    # since this hoted on the public internet, and is only going to be used
-    # by other applications on the server, to query information,
+    # since this isn't hosted on the public internet
+    # and is only going to be used by other
+    # applications on the server, to query information,
     # this uses waitress instead of something more complex
     serve(app, host='0.0.0.0', port=os.environ.get("ALBUM_PORT", 8083))
