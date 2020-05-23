@@ -88,7 +88,7 @@ def split_item_list(comma_seperated: str) -> List[str]:
 class album:
 
     attrs = [
-        "score", "album_name", "cover_artist", "listened_on", "album_artwork",
+        "score", "album_name", "cover_artist", "listened_str", "album_artwork",
         "discogs_url", "reasons", "genres", "styles", "main_artists",
         "other_artists"
     ]
@@ -113,12 +113,14 @@ class album:
                     "WARNING: {} ({}) has no 'score' but has a 'listened on' date"
                     .format(self.album_name, self.cover_artist))
             self.listened_on = xlrd.xldate_as_datetime(int(date), 0)
+            self.listened_str = self.listened_on.strftime("%Y-%m-%d")
         else:
             if self.score is not None:
                 print(
                     "WARNING: {} ({}) has no 'listened on' date but has a 'score'"
                     .format(self.album_name, self.cover_artist))
             self.listened_on = None
+            self.listened_str = None
         self.album_artwork = re.search(r"https?://[^\"]+", album_artwork)
         if self.album_artwork:
             self.album_artwork = self.album_artwork.group(0)
