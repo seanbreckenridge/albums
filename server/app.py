@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import gc
 import logging
 from datetime import datetime
 from typing import List, Any
@@ -173,6 +174,8 @@ def request_albums() -> List[album]:
 @app.route("/")
 def album_route():
 
+    gc.collect()
+
     logger.info("{} '/' {}".format(
         datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
 
@@ -207,6 +210,8 @@ def album_route():
 # expects get data like: /arists?ids=40,2042,234
 @app.route("/artists")
 def artist_names():
+
+    gc.collect()
 
     logger.info("{} '/' {}".format(
         datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
