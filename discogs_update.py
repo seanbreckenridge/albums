@@ -241,7 +241,7 @@ def checkargs():
     global attempt_to_resolve_to_master
     parser = argparse.ArgumentParser()
     parser.add_argument("-r", "--resolve-to-master", action="store_true", default=False, help="Check each release to see if it has a master, and replace it with master if it exists.")
-    parser.add_argument("-a", "--add-links", type=argparse.FileType('r', encoding='utf-8'), help="Takes a file as input, which contains clean discogs links (e.g. https://www.discogs.com/master/234823) seperated by newlines; if those already exist on the spreadsheet, adds description to the reason.")
+    parser.add_argument("-a", "--add-links", type=argparse.FileType('r', encoding='utf-8'), help="Takes a file as input, which contains clean discogs links (e.g. https://www.discogs.com/master/234823) separated by newlines; if those already exist on the spreadsheet, adds description to the reason.")
     parser.add_argument("-d", "--description", help="The description for the file given by --add-links")
     args = parser.parse_args()
     if args.add_links:

@@ -70,17 +70,17 @@ def make_request() -> List[List[Any]]:
         valueRenderOption="FORMULA").execute().get("values", [])
 
 
-def split_item_list(comma_seperated: str) -> List[str]:
+def split_item_list(comma_separated: str) -> List[str]:
     """
     Split comma separated string into list
     """
     # special case, since it has commas in it
     return_names = []
-    if "Folk, World, & Country" in comma_seperated:  # special case, has commas in it.
-        comma_seperated = comma_seperated.replace("Folk, World, & Country", "")
+    if "Folk, World, & Country" in comma_separated:  # special case, has commas in it.
+        comma_separated = comma_seperated.replace("Folk, World, & Country", "")
         return_names.append('Folk, World, & Country')
 
-    for description in re.split(r"\s*,\s*", comma_seperated):
+    for description in re.split(r"\s*,\s*", comma_separated):
         if description.strip():
             return_names.append(description.strip())
     return return_names
