@@ -77,7 +77,7 @@ def split_item_list(comma_separated: str) -> List[str]:
     # special case, since it has commas in it
     return_names = []
     if "Folk, World, & Country" in comma_separated:  # special case, has commas in it.
-        comma_separated = comma_seperated.replace("Folk, World, & Country", "")
+        comma_separated = comma_separated.replace("Folk, World, & Country", "")
         return_names.append('Folk, World, & Country')
 
     for description in re.split(r"\s*,\s*", comma_separated):
