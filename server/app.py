@@ -63,7 +63,8 @@ def make_request() -> List[List[Any]]:
     service = discovery.build('sheets',
                               'v4',
                               http=http,
-                              discoveryServiceUrl=discoveryUrl)
+                              discoveryServiceUrl=discoveryUrl,
+                              cache_discovery=False)
     return service.spreadsheets().values().get(
         spreadsheetId=spreadsheet_id,
         range="A1:L",

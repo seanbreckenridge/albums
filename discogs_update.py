@@ -213,7 +213,7 @@ def add_description(values, file, description):
 def update_values(values, credentials):
     """Updates the values on the spreadsheet"""
     # Uses batchUpdate instead of update since its difficult to format 'date listened on' from FORMULA valueRenderOption
-    service = discovery.build('sheets', 'v4', credentials=credentials)
+    service = discovery.build('sheets', 'v4', credentials=credentials, cache_discovery=False)
     no_of_rows = len(values)
     update_data = [
         {

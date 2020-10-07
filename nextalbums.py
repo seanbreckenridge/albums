@@ -59,7 +59,6 @@ def parse_command_line_args():
     # redirect stdout to os.devnull if quiet mode is activated:
     if args.quiet:
         sys.stdout = open(os.devnull, 'w')
-    
     return args.n, args.random, args.open, args.memory
 
 
@@ -91,7 +90,7 @@ def get_values(credentials, range, valueRenderOption):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?version=v4')
-    service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl)
+    service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl, cache_discovery=False)
     result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range, valueRenderOption=valueRenderOption).execute()
     return result.get('values', [])
 
@@ -108,7 +107,6 @@ if __name__ == "__main__":
             .format(spreadsheet_id, pageId, prev_album_cell))
         except: # no previous call
             open_in_browser = True # failed to open, use API
-            
     credentials = get_credentials()
     values = get_values(credentials, "A1:D", "FORMATTED_VALUE")
     if not values:
@@ -134,7 +132,7 @@ if __name__ == "__main__":
         for index in range(count):
             if index < len(not_listened_to):
                 if index == 0:
-                    link_range = not_listened_to[index][0] + 2
+                    link_range = int(not_listened_to[index][0]) + 2
                     #  + 2 is accounting for header
                     #  and the fact that sheets starts from 1 instead of 0.
                     with open(PREV_CALL_FILE, 'w') as call_f:
