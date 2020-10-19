@@ -32,6 +32,8 @@ You can see the full list of sources for the spreadsheet in [`src`](src).
 
 Note for '1001 Albums You Must Hear Before You Die' and 'Rolling Stone's 500 Greatest Albums of All Time', the number of albums is above 1001 and 500 respectively, as there have been multiple versions of the book, and I've included anything that was ever on the list.
 
+Note: The 'Rolling Stone's 500 Greatest of All Time' is a combination of the 2012 and earlier versions.
+
 [`src`](src) also contains 3 files that list albums I added [Manually](src/Manual.csv), on a [Recommendation](src/Recommendation.csv), or because of a [Relation](src/Relation.csv) (I liked an artist so I added more of their works). These albums are not listed in `spreadsheet.csv`
 
 The format of all files in [src](src) except for [`all.csv`](src/all.csv) and [`valid_albums.csv`](src/valid_albums.csv) is:
