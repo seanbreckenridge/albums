@@ -10,22 +10,6 @@ This is a personal project of mine, but I thought I'd leave these files up here 
 
 You can also use [`SQL/statements.sql`](SQL/) to create a MySQL schema with similar data to `spreadsheet.csv`. `spreadsheet.csv`, the files for each reason in `src` and `SQL/statements.sql`/`SQL/score_statements` will be updated whenever I add something to the list.
 
-[`server`](./server) includes a flask server which grabs current information from spreadsheet:
-
-```
-'/' endpoint
-get scored albums based on a few filters:
-GET args:
-limit=int, default 50
-orderby=score|listened_on, default score
-sort=asc|desc, defeault desc
-```
-```
-'/artist' endpoint GET arg:
-ids=id1,id2,id3,id4
-(discogs artist IDs, which are returned in the response of '/')
-```
-
 #### Sources for `spreadsheet.csv`:
 
 You can see the full list of sources for the spreadsheet in [`src`](src).
@@ -84,6 +68,26 @@ $ python3 nextalbums.py -qo
 ```
 
 Install Dependencies: `python3 -m pip install --user --upgrade -r requirements3.txt`
+
+#### server
+
+[`server`](./server) includes a flask server which grabs current information from spreadsheet:
+
+```
+'/' endpoint
+get scored albums based on a few filters:
+GET args:
+limit=int, default 50
+orderby=score|listened_on, default score
+sort=asc|desc, defeault desc
+```
+```
+'/artist' endpoint GET arg:
+ids=id1,id2,id3,id4
+(discogs artist IDs, which are returned in the response of '/')
+```
+
+Thats cached periodically and used to pull recent albums I've listened onto my 'Media Feed' window [on my website](https://sean.fish/)
 
 #### Installation:
 
