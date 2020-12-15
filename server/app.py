@@ -4,7 +4,7 @@ import re
 import gc
 import logging
 from datetime import datetime
-from typing import List, Any
+from typing import List, Any, Optional, Dict
 
 import httplib2
 import xlrd
@@ -103,7 +103,7 @@ class album:
         score, album_name, artists_on_album_cover, year, date, reasons, album_artwork, \
             discogs_url, main_artists, genres, styles, credits = map(str, vals)
         try:
-            self.score = float(score)
+            self.score: Optional[float] = float(score)
         except ValueError:  # could be empty or 'can't find'
             self.score = None
         self.album_name = album_name
@@ -123,9 +123,9 @@ class album:
                     .format(self.album_name, self.cover_artist))
             self.listened_on = None
             self.listened_str = None
-        self.album_artwork = re.search(r"https?://[^\"]+", album_artwork)
-        if self.album_artwork:
-            self.album_artwork = self.album_artwork.group(0)
+        artwork = re.search(r"https?://[^\"]+", album_artwork)
+        if artwork:
+            self.album_artwork: Optional[str]= artwork.group(0)
         else:
             self.album_artwork = None
             print("Warning. No Album Artwork extracted from '{}' for '{}'".
@@ -155,7 +155,7 @@ class album:
 
     __str__ = __repr__
 
-    def to_dict(self) -> str:
+    def to_dict(self) -> Dict[str, Any]:
         return {attr: getattr(self, attr) for attr in self.__class__.attrs}
 
 

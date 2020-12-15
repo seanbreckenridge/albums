@@ -7,4 +7,5 @@ cd "$THIS_DIR"
 git pull
 
 # run server
+pipenv install
 exec pipenv run python3 "${THIS_DIR}/app.py"
