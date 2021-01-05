@@ -99,9 +99,9 @@ Thats cached periodically and used to pull recent albums I've listened onto my '
 
 1. Create your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). You can open a new [google sheet](https://docs.google.com/spreadsheets/u/0/), and then File > Import [`spreadsheet.csv`](spreadsheet.csv) into a new google sheet. I'd also recommend setting a fixed row height to ensure images are all the same size (You can do this by doing Ctrl/⌘ + A repeatedly till the margins are selected, and then resizing one row to your desired height.)
 
-2. Change the `spreadsheet_id` [here](https://gitlab.com/seanbreckenridge/albums/blob/master/nextalbums.py#L15) (the id is the long string after `/d/` in the URL when you're editing it) 
+2. Change the `spreadsheet_id` [here](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L15) (the id is the long string after `/d/` in the URL when you're editing it) 
 
-3. Edit the [pageId](https://gitlab.com/seanbreckenridge/albums/blob/master/nextalbums.py#L16) (the number after `edit#gid=` when on the google sheets URL)
+3. Edit the [pageId](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L16) (the number after `edit#gid=` when on the google sheets URL)
 
 4. Create a file named `client_secret.json` in the root directory which contains your credentials for a google sheets OAuth connection. [Tutorial here](https://console.developers.google.com); download your created credentials from [here](https://console.developers.google.com/apis/credentials)
 
