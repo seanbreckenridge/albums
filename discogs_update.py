@@ -15,10 +15,12 @@ from googleapiclient import discovery
 from nextalbums import get_credentials, spreadsheet_id, get_values
 
 d_Client = None
-update_threshold = 10   # ends the program and updates after these many updates
+update_threshold = 10  # ends the program and updates after these many updates
 update_count = 0
 attempt_to_resolve_to_master = False
-token_filename = os.path.abspath(os.path.join(os.path.dirname(__file__), "discogs_token.yaml"))
+token_filename = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "discogs_token.yaml")
+)
 
 
 def discogs_token(filename):
@@ -81,11 +83,15 @@ def fix_discogs_link(link):
                 sleep(2)
                 if rel.master is not None:
                     print(f"Resolved release {release_match} to {rel.master.id}.")
-                    return "https://www.discogs.com/master/{}".format(int(rel.master.id))
+                    return "https://www.discogs.com/master/{}".format(
+                        int(rel.master.id)
+                    )
                 else:
                     return "https://www.discogs.com/release/{}".format(release_match)
             else:
-                return "https://www.discogs.com/release/{}".format(release_id.groups()[0])
+                return "https://www.discogs.com/release/{}".format(
+                    release_id.groups()[0]
+                )
         else:
             raise Exception(f"Unknown discogs link: {link}. Exiting...")
 
@@ -95,7 +101,9 @@ def fix_discogs_artist_name(artists):
     Discogs lists some artists with parens after their name to prevent duplicates."""
     artist_ids = [str(a.id) for a in artists if a.id != 0]
     artists_names = [str(a.name) for a in artists]
-    artist_fixed_names = [re.sub(r"\(\d+\)$", "", name).strip() for name in artists_names]
+    artist_fixed_names = [
+        re.sub(r"\(\d+\)$", "", name).strip() for name in artists_names
+    ]
     return ", ".join(artist_fixed_names), "|".join(artist_ids)
 
 
@@ -106,8 +114,11 @@ def prompt_changes(old_row, new_row):
     new_row = new_row[1:]
     changes = []
     for index, (old_item, new_item) in enumerate(zip(old_row, new_row)):
-        if old_item is not None and len(old_item.strip()) != 0 \
-                and str(old_item).strip().lower() != str(new_item).strip().lower():
+        if (
+            old_item is not None
+            and len(old_item.strip()) != 0
+            and str(old_item).strip().lower() != str(new_item).strip().lower()
+        ):
             changes.append(f"'{old_item}' → '{new_item}'")
     if changes:
         print("\n".join([colored("CONFIRM CHANGES:", "red")] + changes))
@@ -129,14 +140,20 @@ def update_row_with_discogs_data(row, max_length):
     row[2], row[8] = fix_discogs_artist_name(rel.artists)  # Artist Name
     row[3] = rel.year  # Year
     if row[3] == 0:  # discogs API returns 0 if year was unknown for master release
-        print(f"Warning: Failed to get year for {id}: {row[1]}. Using old year ({original_row[3]}).")
+        print(
+            f"Warning: Failed to get year for {id}: {row[1]}. Using old year ({original_row[3]})."
+        )
         row[3] = original_row[3]
     if rel.images is not None:
         row[6] = '=IMAGE("{}")'.format(rel.images[0]["uri"])  # Image
     else:
         row[6] = ""
-    row[9] = ", ".join(sorted(set(rel.genres if rel.genres is not None else [])))  # Genres
-    row[10] = ", ".join(sorted(set(rel.styles if rel.styles is not None else [])))  # Style
+    row[9] = ", ".join(
+        sorted(set(rel.genres if rel.genres is not None else []))
+    )  # Genres
+    row[10] = ", ".join(
+        sorted(set(rel.styles if rel.styles is not None else []))
+    )  # Style
     artist_ids = set([person.id for person in rel.credits if person.id != 0])
     row[11] = "|".join(map(str, artist_ids))  # Credit Artist IDs
     if prompt_changes(original_row, row):
@@ -170,7 +187,7 @@ def fix_rows(values):
         try:
             values[index] = _fix_row(row, max_no_of_columns)
         except discogs_client.exceptions.HTTPError:
-            if '429' in str(discogs_client.exceptions.HTTPError):
+            if "429" in str(discogs_client.exceptions.HTTPError):
                 wait_time = 30
                 print(f"[Discogs] API Limit Reached. Waiting {wait_time} seconds...")
                 sleep(wait_time)
@@ -178,7 +195,7 @@ def fix_rows(values):
                 traceback.print_exc()  # non rate-limit related error
                 break
         except:
-            traceback.print_exc() #  other error
+            traceback.print_exc()  #  other error
             break
 
         # check for duplicate links, i.e. duplicate entries
@@ -213,26 +230,31 @@ def add_description(values, file, description):
 def update_values(values, credentials):
     """Updates the values on the spreadsheet"""
     # Uses batchUpdate instead of update since its difficult to format 'date listened on' from FORMULA valueRenderOption
-    service = discovery.build('sheets', 'v4', credentials=credentials, cache_discovery=False)
+    service = discovery.build(
+        "sheets", "v4", credentials=credentials, cache_discovery=False
+    )
     no_of_rows = len(values)
     update_data = [
         {
             # Album, Artist, Year
-            'range': "Music!B1:D{}".format(no_of_rows),
-            'values': [vals[1:4] for vals in values]
+            "range": "Music!B1:D{}".format(no_of_rows),
+            "values": [vals[1:4] for vals in values],
         },
         {
             # Album Artwork, Discogs Link, Artist ID(s), Genre, Style, Credits (ID)
-            'range': "Music!F1:L{}".format(no_of_rows),
-            'values': [vals[5:] for vals in values]
-        }
+            "range": "Music!F1:L{}".format(no_of_rows),
+            "values": [vals[5:] for vals in values],
+        },
     ]
     update_body = {
-        'valueInputOption': "USER_ENTERED",  # to allow images to display
-        'data': update_data
+        "valueInputOption": "USER_ENTERED",  # to allow images to display
+        "data": update_data,
     }
-    request = service.spreadsheets().values().batchUpdate(
-        spreadsheetId=spreadsheet_id, body=update_body)
+    request = (
+        service.spreadsheets()
+        .values()
+        .batchUpdate(spreadsheetId=spreadsheet_id, body=update_body)
+    )
     return request.execute()
 
 
@@ -240,9 +262,22 @@ def checkargs():
     """Gets args from command line to determine whether or not to check if we should try to resolve releases to master"""
     global attempt_to_resolve_to_master
     parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--resolve-to-master", action="store_true", default=False, help="Check each release to see if it has a master, and replace it with master if it exists.")
-    parser.add_argument("-a", "--add-links", type=argparse.FileType('r', encoding='utf-8'), help="Takes a file as input, which contains clean discogs links (e.g. https://www.discogs.com/master/234823) separated by newlines; if those already exist on the spreadsheet, adds description to the reason.")
-    parser.add_argument("-d", "--description", help="The description for the file given by --add-links")
+    parser.add_argument(
+        "-r",
+        "--resolve-to-master",
+        action="store_true",
+        default=False,
+        help="Check each release to see if it has a master, and replace it with master if it exists.",
+    )
+    parser.add_argument(
+        "-a",
+        "--add-links",
+        type=argparse.FileType("r", encoding="utf-8"),
+        help="Takes a file as input, which contains clean discogs links (e.g. https://www.discogs.com/master/234823) separated by newlines; if those already exist on the spreadsheet, adds description to the reason.",
+    )
+    parser.add_argument(
+        "-d", "--description", help="The description for the file given by --add-links"
+    )
     args = parser.parse_args()
     if args.add_links:
         if not args.description:
@@ -268,6 +303,7 @@ def main():
             values = add_description(values, file, desc)
         response = update_values(values, credentials)
         print("Updated {} cells.".format(response["totalUpdatedCells"]))
+
 
 if __name__ == "__main__":
     main()

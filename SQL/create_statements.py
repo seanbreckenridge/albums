@@ -15,12 +15,15 @@ import yaml
 
 def get_from_parent_dir(path):
     """Gets an aboslute path to a file one directory above this"""
-    return os.path.abspath(os.path.join(os.path.join(os.path.dirname(__file__), os.path.pardir), path))
+    return os.path.abspath(
+        os.path.join(os.path.join(os.path.dirname(__file__), os.path.pardir), path)
+    )
 
 
 def SQL_dir(path):
     """Gets an absolute path to a file in this directory"""
     return os.path.abspath(os.path.join(os.path.dirname(__file__), path))
+
 
 sys.path.insert(0, get_from_parent_dir(""))
 
@@ -57,9 +60,11 @@ class autoincrement_analog:
     def add_comma_seperated_list(self, comma_seperated):
         return_ids = []
         # special case, since it has commas in it
-        if "Folk, World, & Country" in comma_seperated:  # special case, has commas in it.
+        if (
+            "Folk, World, & Country" in comma_seperated
+        ):  # special case, has commas in it.
             comma_seperated = comma_seperated.replace("Folk, World, & Country", "")
-            return_ids.append(self.add('Folk, World, & Country'))
+            return_ids.append(self.add("Folk, World, & Country"))
 
         for description in re.split("\s*,\s*", comma_seperated):
             if description.strip():
@@ -69,13 +74,14 @@ class autoincrement_analog:
 
 class cache:
     """class to manage caching API requests for artist names"""
+
     def __init__(self, yaml_path):
         self.yaml_path = yaml_path
         self.write_to_cache_const = 25
         self.write_to_cache_periodically = self.write_to_cache_const
         if not os.path.exists(self.yaml_path):
-            open(self.yaml_path, 'a').close()
-        with open(self.yaml_path, 'r') as js_f:
+            open(self.yaml_path, "a").close()
+        with open(self.yaml_path, "r") as js_f:
             try:
                 self.items = yaml.load(js_f, Loader=yaml.FullLoader)
                 print("[Cache] {} items loaded from cache.".format(len(self.items)))
@@ -84,7 +90,7 @@ class cache:
                 self.items = {}
 
     def update_yaml_file(self):
-        with open(self.yaml_path, 'w') as f:
+        with open(self.yaml_path, "w") as f:
             yaml.dump(self.items, f, default_flow_style=False)
 
     def download_name(self, id):
@@ -99,8 +105,14 @@ class cache:
         try:
             return re.sub(r"\(\d+\)$", "", d_Client.artist(int(id)).name).strip()
         except discogs_client.exceptions.HTTPError as couldnt_find_name:
-            print("Failed to name for download https://www.discogs.com/artist/{}".format(id))
-            print("This id should be removed from the credits cell, no way around this currently.")
+            print(
+                "Failed to name for download https://www.discogs.com/artist/{}".format(
+                    id
+                )
+            )
+            print(
+                "This id should be removed from the credits cell, no way around this currently."
+            )
             sys.exit(1)
 
     def __contains__(self, id):
@@ -108,7 +120,9 @@ class cache:
         return int(id) in self.items
 
     def get(self, id):
-        if str(id) == "194":  # Various Artists; this doesnt have a page on discogs, its just a placeholder
+        if (
+            str(id) == "194"
+        ):  # Various Artists; this doesnt have a page on discogs, its just a placeholder
             self.items[194] = "Various"
             return self.items[194]
         if self.__contains__(id):
@@ -140,6 +154,7 @@ def quote(input_str):
 
 class album:
     """data for each album"""
+
     def __init__(self, vals):
         global artist_cache
         global reasons_table
@@ -148,8 +163,20 @@ class album:
         #  add empty rows to places where spreadsheet had no values
         while len(vals) < 12:
             vals.append("")
-        score, album_name, artists_on_album_cover, year, date, reasons, album_artwork, \
-            discogs_url, main_artists, genres, styles, credits = map(str, vals)
+        (
+            score,
+            album_name,
+            artists_on_album_cover,
+            year,
+            date,
+            reasons,
+            album_artwork,
+            discogs_url,
+            main_artists,
+            genres,
+            styles,
+            credits,
+        ) = map(str, vals)
         try:
             self.score = float(score)
         except:  # could be empty or 'can't find'
@@ -159,21 +186,35 @@ class album:
         self.year = int(year)
         if date.strip():
             if self.score is None:
-                print("WARNING: {} ({}) has no 'score' but has a 'listened on' date".format(self.album_name, self.cover_artist))
+                print(
+                    "WARNING: {} ({}) has no 'score' but has a 'listened on' date".format(
+                        self.album_name, self.cover_artist
+                    )
+                )
             self.listened_on = xlrd.xldate_as_datetime(int(date), 0)
-            self.listened_on = "{year}-{month}-{day}".format(year=self.listened_on.year,
-                                                             month=self.listened_on.month,
-                                                             day=self.listened_on.day)
+            self.listened_on = "{year}-{month}-{day}".format(
+                year=self.listened_on.year,
+                month=self.listened_on.month,
+                day=self.listened_on.day,
+            )
         else:
             if self.score is not None:
-                print("WARNING: {} ({}) has no 'listened on' date but has a 'score'".format(self.album_name, self.cover_artist))
+                print(
+                    "WARNING: {} ({}) has no 'listened on' date but has a 'score'".format(
+                        self.album_name, self.cover_artist
+                    )
+                )
             self.listened_on = None
-        self.album_artwork = re.search("https?:\/\/[^\"]+", album_artwork)
+        self.album_artwork = re.search('https?:\/\/[^"]+', album_artwork)
         if self.album_artwork:
             self.album_artwork = self.album_artwork.group(0)
         else:
             self.album_artwork = None
-            print("Warning. No Album Artwork extracted from '{}' for '{}'".format(album_artwork, album_name))
+            print(
+                "Warning. No Album Artwork extracted from '{}' for '{}'".format(
+                    album_artwork, album_name
+                )
+            )
         self.discogs_url = discogs_url if discogs_url.strip() else None
 
         self.reason_id = reasons_table.add_comma_seperated_list(reasons)
@@ -184,22 +225,37 @@ class album:
         for main_id in main_artists.strip().split("|"):
             if main_id.strip():
                 if main_id not in artist_cache:
-                    artist_cache.get(main_id)  # download name so we can get it from cache later
+                    artist_cache.get(
+                        main_id
+                    )  # download name so we can get it from cache later
                 self.main_artists.append(main_id)
 
         self.other_artists = []
         for other_id in credits.strip().split("|"):
             if other_id.strip():
                 if other_id not in artist_cache:
-                    artist_cache.get(other_id)  # download name so we can get it from cache later
+                    artist_cache.get(
+                        other_id
+                    )  # download name so we can get it from cache later
                 self.other_artists.append(other_id)
 
 
 def get_values(credentials):
     http = credentials.authorize(httplib2.Http())
-    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?version=v4')
-    service = discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discoveryUrl, cache_discovery=False)
-    result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range="A1:L", valueRenderOption="FORMULA").execute()
+    discoveryUrl = "https://sheets.googleapis.com/$discovery/rest?version=v4"
+    service = discovery.build(
+        "sheets",
+        "v4",
+        http=http,
+        discoveryServiceUrl=discoveryUrl,
+        cache_discovery=False,
+    )
+    result = (
+        service.spreadsheets()
+        .values()
+        .get(spreadsheetId=spreadsheet_id, range="A1:L", valueRenderOption="FORMULA")
+        .execute()
+    )
     return result.get("values", [])
 
 
@@ -217,15 +273,19 @@ def statements(albums, use_score, base_table_file, statement_file):
     indexed_artists = {}
 
     for index, artist in enumerate(iter(artist_cache), 1):
-        indexed_artists[index] = {"discogs_url": "https://www.discogs.com/artist/{}".format(artist),
-                                  "name": artist_cache.items[artist]}
+        indexed_artists[index] = {
+            "discogs_url": "https://www.discogs.com/artist/{}".format(artist),
+            "name": artist_cache.items[artist],
+        }
 
     for index, vals in indexed_artists.items():
-        statements.append("INSERT INTO Artist (ArtistID, DiscogsArtistURL, Name) VALUES ({artistid}, {discogsurl}, {name});".format(
-                    artistid=index,
-                    discogsurl=quote(vals['discogs_url']),
-                    name=quote(escape_apostrophes(vals['name']))
-                    ))
+        statements.append(
+            "INSERT INTO Artist (ArtistID, DiscogsArtistURL, Name) VALUES ({artistid}, {discogsurl}, {name});".format(
+                artistid=index,
+                discogsurl=quote(vals["discogs_url"]),
+                name=quote(escape_apostrophes(vals["name"])),
+            )
+        )
 
     # create album SQL statements
 
@@ -236,80 +296,110 @@ def statements(albums, use_score, base_table_file, statement_file):
 
     if use_score:
         for index, a in indexed_albums.items():
-            statements.append("INSERT INTO Album (AlbumID, Name, Year, CoverArtists, AlbumArtworkURL, DiscogsURL, Score, ListenedOn) " +
-                              "VALUES ({albumid}, {name}, {year}, {cover_artists}, {artwork_url}, {discogsurl}, {score}, {listened_on});".format(
-                                  albumid=index,
-                                  name=quote(escape_apostrophes(a.album_name)),
-                                  year=a.year,
-                                  cover_artists=quote(escape_apostrophes(a.cover_artist)),
-                                  artwork_url='NULL' if a.album_artwork is None else quote(a.album_artwork),
-                                  discogsurl='NULL' if a.discogs_url is None else quote(a.discogs_url),
-                                  score='NULL' if a.score is None else a.score,
-                                  listened_on='NULL' if a.listened_on is None else quote(a.listened_on)
-                              ))
+            statements.append(
+                "INSERT INTO Album (AlbumID, Name, Year, CoverArtists, AlbumArtworkURL, DiscogsURL, Score, ListenedOn) "
+                + "VALUES ({albumid}, {name}, {year}, {cover_artists}, {artwork_url}, {discogsurl}, {score}, {listened_on});".format(
+                    albumid=index,
+                    name=quote(escape_apostrophes(a.album_name)),
+                    year=a.year,
+                    cover_artists=quote(escape_apostrophes(a.cover_artist)),
+                    artwork_url="NULL"
+                    if a.album_artwork is None
+                    else quote(a.album_artwork),
+                    discogsurl="NULL"
+                    if a.discogs_url is None
+                    else quote(a.discogs_url),
+                    score="NULL" if a.score is None else a.score,
+                    listened_on="NULL"
+                    if a.listened_on is None
+                    else quote(a.listened_on),
+                )
+            )
     else:
         for index, a in indexed_albums.items():
-            statements.append("INSERT INTO Album (AlbumID, Name, Year, CoverArtists, AlbumArtworkURL, DiscogsURL) " +
-                              "VALUES ({albumid}, {name}, {year}, {cover_artists}, {artwork_url}, {discogsurl});".format(
-                                  albumid=index,
-                                  name=quote(escape_apostrophes(a.album_name)),
-                                  year=a.year,
-                                  cover_artists=quote(escape_apostrophes(a.cover_artist)),
-                                  artwork_url='NULL' if a.album_artwork is None else quote(a.album_artwork),
-                                  discogsurl='NULL' if a.discogs_url is None else quote(a.discogs_url),
-                              ))
+            statements.append(
+                "INSERT INTO Album (AlbumID, Name, Year, CoverArtists, AlbumArtworkURL, DiscogsURL) "
+                + "VALUES ({albumid}, {name}, {year}, {cover_artists}, {artwork_url}, {discogsurl});".format(
+                    albumid=index,
+                    name=quote(escape_apostrophes(a.album_name)),
+                    year=a.year,
+                    cover_artists=quote(escape_apostrophes(a.cover_artist)),
+                    artwork_url="NULL"
+                    if a.album_artwork is None
+                    else quote(a.album_artwork),
+                    discogsurl="NULL"
+                    if a.discogs_url is None
+                    else quote(a.discogs_url),
+                )
+            )
 
     # add values to artist/album intersection table
 
     discogs_id_to_artist_id = {}
     for index, vals in indexed_artists.items():
-        discogs_id_to_artist_id[vals['discogs_url'].rstrip('/').split('/')[-1]] = index
+        discogs_id_to_artist_id[vals["discogs_url"].rstrip("/").split("/")[-1]] = index
 
     for index, a in indexed_albums.items():
         for artist in a.main_artists:
-            statements.append("INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) " +
-                              "VALUES ({albumid}, {artistid}, 1);".format(
-                                albumid=index,
-                                artistid=discogs_id_to_artist_id[artist]
-                              ))
+            statements.append(
+                "INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) "
+                + "VALUES ({albumid}, {artistid}, 1);".format(
+                    albumid=index, artistid=discogs_id_to_artist_id[artist]
+                )
+            )
         for artist in a.other_artists:
-            statements.append("INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) " +
-                              "VALUES ({albumid}, {artistid}, 0);".format(
-                                albumid=index,
-                                artistid=discogs_id_to_artist_id[artist]
-                              ))
+            statements.append(
+                "INSERT INTO ArtistWorkedOnAlbum (Album_AlbumID, Artist_ArtistID, Type) "
+                + "VALUES ({albumid}, {artistid}, 0);".format(
+                    albumid=index, artistid=discogs_id_to_artist_id[artist]
+                )
+            )
 
     # create style/genre/reason surrogate ids
 
-    for (table_name, table) in [('Reason', reasons_table), ('Genre', genres_table), ('Style', styles_table)]:
-        for description, index in table.keymap.items():  # for each index, description surrogate key pair
-            statements.append("INSERT INTO {tbl_name} ({id_column_name}, Description) VALUES ({id}, {desc});".format(
-                                tbl_name=table_name,
-                                id_column_name="{}ID".format(table_name),
-                                id=index,
-                                desc=quote(escape_apostrophes(description))
-                            ))
+    for (table_name, table) in [
+        ("Reason", reasons_table),
+        ("Genre", genres_table),
+        ("Style", styles_table),
+    ]:
+        for (
+            description,
+            index,
+        ) in table.keymap.items():  # for each index, description surrogate key pair
+            statements.append(
+                "INSERT INTO {tbl_name} ({id_column_name}, Description) VALUES ({id}, {desc});".format(
+                    tbl_name=table_name,
+                    id_column_name="{}ID".format(table_name),
+                    id=index,
+                    desc=quote(escape_apostrophes(description)),
+                )
+            )
 
     # add values to style/genre/reason intersection tables
 
     for index, a in indexed_albums.items():  # for each album
-        for short_name, table in [('Reason', a.reason_id), ('Genre', a.genre_id), ('Style', a.style_id)]: #  for each descriptor
+        for short_name, table in [
+            ("Reason", a.reason_id),
+            ("Genre", a.genre_id),
+            ("Style", a.style_id),
+        ]:  #  for each descriptor
             for id in table:  # for each id this album has for this descriptor
-                statements.append("INSERT INTO Album{short_name} (AlbumID, {short_name}ID) VALUES ({album_id}, {id});".format(
-                    short_name=short_name,
-                    album_id=index,
-                    id=id
-                ))
+                statements.append(
+                    "INSERT INTO Album{short_name} (AlbumID, {short_name}ID) VALUES ({album_id}, {id});".format(
+                        short_name=short_name, album_id=index, id=id
+                    )
+                )
 
     # write to files
 
     with open(base_table_file) as f:
         table_definitions = f.read()
 
-    with open(statement_file, 'w') as g:
+    with open(statement_file, "w") as g:
         g.write("{}\n".format(table_definitions))
         for line in statements:
             g.write("{}\n".format(line))
+
 
 def main():
     global d_Client
@@ -318,14 +408,19 @@ def main():
     global styles_table
     global genres_table
     parser = argparse.ArgumentParser(
-        prog='python3 create_statements.py',
+        prog="python3 create_statements.py",
         description="Creates MySQL statements according to the data from the spreadsheet.",
-        formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30))
-    parser.add_argument("-s", "--use-scores", action="store_true",
-                        help="If flag is present on command line, adds all albums " +
-                        "including scores and date is was listen to on. If the flag is " +
-                        "not present, adds all albums, disregarding any albums " +
-                        "added manually, by relation, or on a recommendation")
+        formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=30),
+    )
+    parser.add_argument(
+        "-s",
+        "--use-scores",
+        action="store_true",
+        help="If flag is present on command line, adds all albums "
+        + "including scores and date is was listen to on. If the flag is "
+        + "not present, adds all albums, disregarding any albums "
+        + "added manually, by relation, or on a recommendation",
+    )
 
     args = parser.parse_args()
 
@@ -365,11 +460,18 @@ def main():
             albums = [album(list(val)) for val in values[1:]]
             statements(albums, True, score_tables_file, score_output_file)
         else:
-            values = [row for row in values[1:] if not
-              set(map(lambda s: s.lower(), re.split("\s*,\s*", row[5]))) # row[5] is the reason
-              .issubset(set(["manual", "relation", "recommendation"]))]
+            values = [
+                row
+                for row in values[1:]
+                if not set(
+                    map(lambda s: s.lower(), re.split("\s*,\s*", row[5]))
+                ).issubset(  # row[5] is the reason
+                    set(["manual", "relation", "recommendation"])
+                )
+            ]
             albums = [album(list(val)) for val in values]
             statements(albums, False, tables_file, output_file)
+
 
 if __name__ == "__main__":
     main()

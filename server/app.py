@@ -23,7 +23,7 @@ from nextalbums import get_credentials, spreadsheet_id
 app = Flask(__name__)
 
 logging.basicConfig()
-logger = logging.getLogger('waitress')
+logger = logging.getLogger("waitress")
 logger.setLevel(logging.INFO)
 
 sql_dir = os.path.join(root_dir, "SQL")
@@ -59,16 +59,21 @@ def make_request() -> List[List[Any]]:
     returns the results array of arrays
     """
     http = get_credentials().authorize(httplib2.Http())
-    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?version=v4')
-    service = discovery.build('sheets',
-                              'v4',
-                              http=http,
-                              discoveryServiceUrl=discoveryUrl,
-                              cache_discovery=False)
-    return service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id,
-        range="A1:L",
-        valueRenderOption="FORMULA").execute().get("values", [])
+    discoveryUrl = "https://sheets.googleapis.com/$discovery/rest?version=v4"
+    service = discovery.build(
+        "sheets",
+        "v4",
+        http=http,
+        discoveryServiceUrl=discoveryUrl,
+        cache_discovery=False,
+    )
+    return (
+        service.spreadsheets()
+        .values()
+        .get(spreadsheetId=spreadsheet_id, range="A1:L", valueRenderOption="FORMULA")
+        .execute()
+        .get("values", [])
+    )
 
 
 def split_item_list(comma_separated: str) -> List[str]:
@@ -79,7 +84,7 @@ def split_item_list(comma_separated: str) -> List[str]:
     return_names = []
     if "Folk, World, & Country" in comma_separated:  # special case, has commas in it.
         comma_separated = comma_separated.replace("Folk, World, & Country", "")
-        return_names.append('Folk, World, & Country')
+        return_names.append("Folk, World, & Country")
 
     for description in re.split(r"\s*,\s*", comma_separated):
         if description.strip():
@@ -90,9 +95,17 @@ def split_item_list(comma_separated: str) -> List[str]:
 class album:
 
     attrs = [
-        "score", "album_name", "cover_artist", "listened_str", "album_artwork",
-        "discogs_url", "reasons", "genres", "styles", "main_artists",
-        "other_artists"
+        "score",
+        "album_name",
+        "cover_artist",
+        "listened_str",
+        "album_artwork",
+        "discogs_url",
+        "reasons",
+        "genres",
+        "styles",
+        "main_artists",
+        "other_artists",
     ]
 
     def __init__(self, vals: List):
@@ -100,8 +113,20 @@ class album:
         #  add empty rows to places where spreadsheet had no values
         while len(vals) < 12:
             vals.append("")
-        score, album_name, artists_on_album_cover, year, date, reasons, album_artwork, \
-            discogs_url, main_artists, genres, styles, credits = map(str, vals)
+        (
+            score,
+            album_name,
+            artists_on_album_cover,
+            year,
+            date,
+            reasons,
+            album_artwork,
+            discogs_url,
+            main_artists,
+            genres,
+            styles,
+            credits,
+        ) = map(str, vals)
         try:
             self.score: Optional[float] = float(score)
         except ValueError:  # could be empty or 'can't find'
@@ -112,24 +137,31 @@ class album:
         if date.strip():
             if self.score is None:
                 print(
-                    "WARNING: {} ({}) has no 'score' but has a 'listened on' date"
-                    .format(self.album_name, self.cover_artist))
+                    "WARNING: {} ({}) has no 'score' but has a 'listened on' date".format(
+                        self.album_name, self.cover_artist
+                    )
+                )
             self.listened_on = xlrd.xldate_as_datetime(int(date), 0)
             self.listened_str = self.listened_on.strftime("%Y-%m-%d")
         else:
             if self.score is not None:
                 print(
-                    "WARNING: {} ({}) has no 'listened on' date but has a 'score'"
-                    .format(self.album_name, self.cover_artist))
+                    "WARNING: {} ({}) has no 'listened on' date but has a 'score'".format(
+                        self.album_name, self.cover_artist
+                    )
+                )
             self.listened_on = None
             self.listened_str = None
         artwork = re.search(r"https?://[^\"]+", album_artwork)
         if artwork:
-            self.album_artwork: Optional[str]= artwork.group(0)
+            self.album_artwork: Optional[str] = artwork.group(0)
         else:
             self.album_artwork = None
-            print("Warning. No Album Artwork extracted from '{}' for '{}'".
-                  format(album_artwork, album_name))
+            print(
+                "Warning. No Album Artwork extracted from '{}' for '{}'".format(
+                    album_artwork, album_name
+                )
+            )
         self.discogs_url = discogs_url if discogs_url.strip() else None
 
         self.reasons = split_item_list(reasons)
@@ -148,10 +180,14 @@ class album:
 
     def __repr__(self) -> str:
         return "{}({})".format(
-            self.__class__.__name__, ", ".join([
-                "{}={}".format(attr, repr(getattr(self, attr)))
-                for attr in self.__class__.attrs
-            ]))
+            self.__class__.__name__,
+            ", ".join(
+                [
+                    "{}={}".format(attr, repr(getattr(self, attr)))
+                    for attr in self.__class__.attrs
+                ]
+            ),
+        )
 
     __str__ = __repr__
 
@@ -177,20 +213,22 @@ def album_route():
 
     gc.collect()
 
-    logger.info("{} '/' {}".format(
-        datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
+    logger.info(
+        "{} '/' {}".format(
+            datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)
+        )
+    )
 
     # parse request args
     try:
-        limit = int(request.args.get('limit', 50))
+        limit = int(request.args.get("limit", 50))
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
-    sort_by = request.args.get('orderby', 'score')
-    order = request.args.get('sort', 'desc')
-    if sort_by not in ['score', 'listened_on']:
-        return jsonify({"error":
-                        f"{sort_by} not in 'score', 'listened_on'"}), 400
-    if order not in ['asc', 'desc']:
+    sort_by = request.args.get("orderby", "score")
+    order = request.args.get("sort", "desc")
+    if sort_by not in ["score", "listened_on"]:
+        return jsonify({"error": f"{sort_by} not in 'score', 'listened_on'"}), 400
+    if order not in ["asc", "desc"]:
         return jsonify({"error": f"{order} not in 'asc', 'desc'"}), 400
 
     # request albums from google api
@@ -198,7 +236,7 @@ def album_route():
 
     # sort according to flags passed
     albums = list(filter(lambda o: o.score is not None, albums))
-    sort_order: bool = order != 'asc'
+    sort_order: bool = order != "asc"
     if sort_by == "score":
         albums.sort(key=lambda o: o.score, reverse=sort_order)
     else:
@@ -214,8 +252,11 @@ def artist_names():
 
     gc.collect()
 
-    logger.info("{} '/' {}".format(
-        datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)))
+    logger.info(
+        "{} '/' {}".format(
+            datetime.now().strftime("%d-%b-%Y %H:%M:%S.%f"), dict(request.args)
+        )
+    )
 
     # update git repo
     g = git.cmd.Git(root_dir)
@@ -233,4 +274,4 @@ if __name__ == "__main__":
     # and is only going to be used by other
     # applications on the server, to query information,
     # this uses waitress instead of something more complex
-    serve(app, host='0.0.0.0', port=os.environ.get("ALBUM_PORT", 8083))
+    serve(app, host="0.0.0.0", port=os.environ.get("ALBUM_PORT", 8083))

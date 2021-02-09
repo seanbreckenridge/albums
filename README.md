@@ -54,6 +54,7 @@ optional arguments:
 ###### Examples:
 
 Return the next 7 albums to listen to (chronologically), and open the cell that corresponds to <i>September of My Years</i> in a web browser:
+
 ```
 $ python3 nextalbums.py -on 7
 +----------------------------+----------------+------+
@@ -68,7 +69,9 @@ $ python3 nextalbums.py -on 7
 | Caetano Veloso             | Caetano Veloso | 1968 |
 +----------------------------+----------------+------+
 ```
+
 Don't print anything and open the cell that corresponds to the next album to listen to in a web browser.
+
 ```
 $ python3 nextalbums.py -qo
 ```
@@ -87,6 +90,7 @@ limit=int, default 50
 orderby=score|listened_on, default score
 sort=asc|desc, defeault desc
 ```
+
 ```
 '/artist' endpoint GET arg:
 ids=id1,id2,id3,id4
@@ -99,7 +103,7 @@ Thats cached periodically and used to pull recent albums I've listened onto my '
 
 1. Create your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). You can open a new [google sheet](https://docs.google.com/spreadsheets/u/0/), and then File > Import [`spreadsheet.csv`](spreadsheet.csv) into a new google sheet. I'd also recommend setting a fixed row height to ensure images are all the same size (You can do this by doing Ctrl/⌘ + A repeatedly till the margins are selected, and then resizing one row to your desired height.)
 
-2. Change the `spreadsheet_id` [here](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L15) (the id is the long string after `/d/` in the URL when you're editing it) 
+2. Change the `spreadsheet_id` [here](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L15) (the id is the long string after `/d/` in the URL when you're editing it)
 
 3. Edit the [pageId](https://github.com/seanbreckenridge/albums/blob/master/nextalbums.py#L16) (the number after `edit#gid=` when on the google sheets URL)
 
@@ -107,7 +111,7 @@ Thats cached periodically and used to pull recent albums I've listened onto my '
 
 5. Run `setup_credentials.py`
 
-6. (If you want to add albums and validate them with `discogs_update.py`) Create a file `discogs_token.yaml` in the root directory (info can be found [here](https://www.discogs.com/developers/), token [here](https://www.discogs.com/settings/developers)) with contents similar to: 
+6. (If you want to add albums and validate them with `discogs_update.py`) Create a file `discogs_token.yaml` in the root directory (info can be found [here](https://www.discogs.com/developers/), token [here](https://www.discogs.com/settings/developers)) with contents similar to:
 
 ```
 user_agent: myPython3DiscogsClient/1.0
