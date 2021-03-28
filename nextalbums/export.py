@@ -1,6 +1,6 @@
 import re
 import datetime
-from functools import cache
+from functools import lru_cache
 from typing import NamedTuple, List, Iterator, Optional, Any, Union, Dict
 
 import yaml
@@ -10,6 +10,12 @@ import xlrd  # type: ignore[import]
 from .core_gsheets import get_values
 from .common_types import WorksheetData
 from .create_sql_statements import sql_datafile
+
+
+# vendorized from stdlib to work in under python3.9
+def cache(user_function, /):
+    'Simple lightweight unbounded cache.  Sometimes called "memoize".'
+    return lru_cache(maxsize=None)(user_function)
 
 
 class Artist(NamedTuple):
