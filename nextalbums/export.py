@@ -44,6 +44,7 @@ def read_artist_cache() -> Dict[int, str]:
         data: Dict[int, str] = yaml.load(f, Loader=yaml.FullLoader)
     return data
 
+
 @cache
 def fetch_artist_name(artist_id: int) -> Artist:
     return Artist(artist_id=artist_id, artist_name=read_artist_cache().get(artist_id))
