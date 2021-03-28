@@ -46,16 +46,16 @@ class autoincrement_analog:
             else:
                 return self.keymap[desc]  # if this was already here, return the index
 
-    def add_comma_seperated_list(self, comma_seperated):
+    def add_comma_separated_list(self, comma_separated):
         return_ids = []
         # special case, since it has commas in it
         if (
-            "Folk, World, & Country" in comma_seperated
+            "Folk, World, & Country" in comma_separated
         ):  # special case, has commas in it.
-            comma_seperated = comma_seperated.replace("Folk, World, & Country", "")
+            comma_separated = comma_seperated.replace("Folk, World, & Country", "")
             return_ids.append(self.add("Folk, World, & Country"))
 
-        for description in re.split("\s*,\s*", comma_seperated):
+        for description in re.split("\s*,\s*", comma_separated):
             if description.strip():
                 return_ids.append(self.add(description.strip()))
         return return_ids
@@ -205,9 +205,9 @@ class album:
             )
         self.discogs_url = discogs_url if discogs_url.strip() else None
 
-        self.reason_id = reasons_table.add_comma_seperated_list(reasons)
-        self.genre_id = genres_table.add_comma_seperated_list(genres)
-        self.style_id = styles_table.add_comma_seperated_list(styles)
+        self.reason_id = reasons_table.add_comma_separated_list(reasons)
+        self.genre_id = genres_table.add_comma_separated_list(genres)
+        self.style_id = styles_table.add_comma_separated_list(styles)
 
         self.main_artists = []
         for main_id in main_artists.strip().split("|"):
