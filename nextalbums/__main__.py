@@ -90,3 +90,7 @@ def generate_csv() -> None:
 def create_sql_statements(use_scores: bool) -> None:
     """Creates MySQL compliant SQL statements to create a schema with current album data from the spreadsheet"""
     create_statments(use_scores)
+
+
+if __name__ == "__main__":
+    main(prog_name="nextalbums")

@@ -1,5 +1,8 @@
+import json
 import re
 import datetime
+from time import strptime
+from pathlib import Path
 from functools import lru_cache
 from typing import NamedTuple, List, Iterator, Optional, Any, Union, Dict
 
@@ -175,3 +178,29 @@ def default(o: Any) -> Any:
 
 def dump_results(data: Any) -> str:
     return orjson.dumps(data, default=default).decode("utf-8")
+
+
+# helper to read the dump back into list of python object
+def read_dump(p: Path) -> Iterator[Album]:
+    for blob in json.loads(p.read_text()):
+        fscore: Optional[float] = None
+        if blob["score"] is not None:
+            fscore = float(blob["score"])
+        dlistened_on: Optional[datetime.date] = None
+        if blob["listened_on"] is not None:
+            d = strptime(blob["listened_on"], r"%Y-%m-%d")
+            dlistened_on = datetime.date(year=d.tm_year, month=d.tm_mon, day=d.tm_mday)
+        yield Album(
+            score=fscore,
+            album_name=blob["album_name"],
+            cover_artists=blob["cover_artists"],
+            year=int(blob["year"]),
+            listened_on=dlistened_on,
+            album_artwork_url=blob["album_artwork_url"],
+            discogs_url=blob["discogs_url"],
+            reasons=blob["reasons"],
+            genres=blob["genres"],
+            styles=blob["styles"],
+            main_artists=[Artist(**d) for d in blob["main_artists"]],
+            other_artists=[Artist(**d) for d in blob["other_artists"]],
+        )
