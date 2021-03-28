@@ -167,6 +167,7 @@ def export_data(
 
 
 def default(o: Any) -> Any:
+    # serialize NamedTuple
     if hasattr(o, "_asdict"):
         return o._asdict()
     raise TypeError(f"Couldn't serialize {o}")

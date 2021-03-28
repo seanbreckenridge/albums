@@ -10,17 +10,22 @@ from .core_gsheets import get_values
 from .common_types import WorksheetRow, WorksheetData
 
 
-text_wrapper = textwrap.TextWrapper(
-    width=30, drop_whitespace=True, placeholder="...", max_lines=3
-)
-
-
 def format_for_table(r: WorksheetRow) -> WorksheetRow:
     """Formats a row for the table, breaking the text into multiple lines if its above 25 characters in length."""
-    return ["\n".join(text_wrapper.wrap(x)) for x in r]
 
 
 def generate_table(count: int, choose_random: bool) -> str:
+
+    terminal_width, _ = click.get_terminal_size()
+    allow_width = terminal_width // 3
+
+    text_wrapper = textwrap.TextWrapper(
+        # allow table decoration
+        width=allow_width,
+        drop_whitespace=True,
+        placeholder="...",
+        max_lines=3,
+    )
 
     # grab values from sheet
     values: WorksheetData = get_values(
@@ -47,6 +52,6 @@ def generate_table(count: int, choose_random: bool) -> str:
         random.shuffle(not_listened_to)
 
     for row in itertools.islice(not_listened_to, count):
-        p_table.add_row(format_for_table(row))
+        p_table.add_row(["\n".join(text_wrapper.wrap(x)) for x in row])
 
     return str(p_table)
