@@ -7,3 +7,4 @@ discogs_client>=2.2.2
 termcolor
 xlrd>=1.2.0
 click
+orjson

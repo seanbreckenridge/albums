@@ -6,11 +6,11 @@ import logging
 from datetime import datetime
 from typing import List, Any, Optional, Dict
 
-import httplib2
-import xlrd
+import httplib2  # type: ignore[import]
+import xlrd  # type: ignore[import]
 import yaml
-import git
-from googleapiclient import discovery
+import git  # type: ignore[import]
+from googleapiclient import discovery  # type: ignore[import]
 from flask import Flask, jsonify, request
 from waitress import serve
 
@@ -21,6 +21,7 @@ sys.path.insert(0, root_dir)
 from nextalbums import SETTINGS
 from nextalbums.core_gsheets import get_credentials
 from nextalbums.create_sql_statements import sql_datafile
+from nextalbums.export import split_comma_separated
 
 app = Flask(__name__)
 
@@ -67,7 +68,7 @@ def make_request() -> List[List[Any]]:
         discoveryServiceUrl=discoveryUrl,
         cache_discovery=False,
     )
-    return (
+    data: List[List[Any]] = (
         service.spreadsheets()
         .values()
         .get(
@@ -78,22 +79,7 @@ def make_request() -> List[List[Any]]:
         .execute()
         .get("values", [])
     )
-
-
-def split_item_list(comma_separated: str) -> List[str]:
-    """
-    Split comma separated string into list
-    """
-    # special case, since it has commas in it
-    return_names = []
-    if "Folk, World, & Country" in comma_separated:  # special case, has commas in it.
-        comma_separated = comma_separated.replace("Folk, World, & Country", "")
-        return_names.append("Folk, World, & Country")
-
-    for description in re.split(r"\s*,\s*", comma_separated):
-        if description.strip():
-            return_names.append(description.strip())
-    return return_names
+    return data
 
 
 class album:
@@ -168,9 +154,9 @@ class album:
             )
         self.discogs_url = discogs_url if discogs_url.strip() else None
 
-        self.reasons = split_item_list(reasons)
-        self.genres = split_item_list(genres)
-        self.styles = split_item_list(styles)
+        self.reasons = split_comma_separated(reasons)
+        self.genres = split_comma_separated(genres)
+        self.styles = split_comma_separated(styles)
 
         self.main_artists = []
         for main_id in main_artists.strip().split("|"):

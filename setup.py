@@ -14,5 +14,6 @@ setup(
     license="MIT",
     packages=find_packages(include=[pkg]),
     entry_points={"console_scripts": ["nextalbums = nextalbums.__main__:main"]},
+    package_data={pkg: ["py.typed"]},
     install_requires=requirements,
 )

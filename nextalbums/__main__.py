@@ -7,6 +7,7 @@ from .update_database import update_datafiles
 from .favorites import list_favorites
 from .generate_csv import generate_csv_file
 from .create_sql_statements import create_statments
+from .export import export_data, dump_results
 
 
 @click.group()
@@ -20,10 +21,21 @@ def main():
 @main.command()
 @click.argument("COUNT", default=10, type=int)
 @click.option("-r", "--random", is_flag=True, default=False, help="Print random albums")
-@click.option("-j", "--json", is_flag=True, default=False, help="Print output as JSON")
-def print_next(count: int, random: bool, json: bool) -> None:
+def print_next(count: int, random: bool) -> None:
     """Print the next albums I should listen to"""
     click.echo(generate_table(count, random))
+
+
+@main.command()
+def export():
+    """Parse and print all of the information from the spreadsheet as JSON"""
+    items = []
+    for res in export_data():
+        if isinstance(res, Exception):
+            click.echo(str(res), err=True)
+        else:
+            items.append(res)
+    click.echo(dump_results(items))
 
 
 @main.command()

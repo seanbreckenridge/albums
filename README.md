@@ -23,13 +23,16 @@ Options:
 Commands:
   create-sql-statements  Creates MySQL compliant SQL statements to create a...
   discogs-update         Update rows on the spreadsheet which just have a...
+  export                 Parse and print all of the information from the...
   favorites              List my favorites using the SQL Database
   generate-csv           Generate the spreadsheet.csv file in the root dir
   print-next             Print the next albums I should listen to
   update-csv-datafiles   Updates the CSV files in data directory
 ```
 
-- `nextalbums discogs-update` uses the [Discogs API](https://github.com/discogs/discogs_client) to fetch and validate the data on [the spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661)
+Four of those commands are related to updating the data files here:
+
+- `nextalbums discogs-update` uses the [Discogs API](https://github.com/discogs/discogs_client) to fetch and validate the data on [the spreadsheet](https://sean.fish/s/albums)
 - `nextalbums favorites` queries my favorite albums using the live SQL instance
 - `nextalbums generate-csv` updates [`spreadsheet.csv`](./spreadsheet.csv) file
 - `nextalbums update-csv-datafiles` queries the live SQL instance to update the files in [`csv_data`](./csv_data)
@@ -58,6 +61,47 @@ $ nextalbums print-next
 +--------------------------------+---------------------------+------+
 ```
 
+`nextalbums export` exports the entire active spreadsheet to JSON, extracting names out of the SQL cache:
+
+```JSON
+{
+  "score": 7.5,
+  "listened_on": "2019-02-19",
+  "album_name": "Chet Baker Sings",
+  "album_artwork_url": "https://img.discogs.com/KwmScXknIZQ3E9oyQiDjWRBwhDg=/fit-in/600x600/filters:strip_icc():format(jpeg):mode_rgb():quality(90)/discogs-images/R-2930625-1437056636-5751.jpeg.jpg",
+  "cover_artists": "Chet Baker",
+  "discogs_url": "https://www.discogs.com/master/60289",
+  "year": 1954,
+  "reasons": [
+    "NME's 500 Greatest Albums of All Time"
+  ],
+  "genres": [
+    "Jazz"
+  ],
+  "styles": [
+    "Cool Jazz"
+  ],
+  "main_artists": [
+    {
+      "artist_id": 31617,
+      "artist_name": "Chet Baker"
+    }
+  ],
+  "other_artists": [
+    {
+      "artist_id": 31617,
+      "artist_name": "Chet Baker"
+    },
+    {
+      "artist_id": 1515883,
+      "artist_name": "Allan Emig"
+    },
+    {
+      "artist_id": 1914573,
+      "artist_name": "William Claxton"
+    },
+```
+
 ### Sources for `spreadsheet.csv`:
 
 Note for '1001 Albums You Must Hear Before You Die' and 'Rolling Stone's 500 Greatest Albums of All Time', the number of albums is above 1001 and 500 respectively, as there have been multiple versions of the book, and I've included anything that was ever on the list.
@@ -74,14 +118,14 @@ The format of all files in [csv_data](csv_data) except for [`all.csv`](csv_data/
 
 ### Installation:
 
-Configuration for this is handled by modifying the `settings.py` file in this directory. Since that is just a python file, you're free to modify that to pull items out of environment variables (`os.environ["ENVIRONMENT_VAR"]`) or anything else. You can run the file (`python3 settings.py`) to print the computed settings
+Configuration for this is handled by modifying the `settings.py` file in this directory. Since that is just a python file, you're free to modify that to pull items out of environment variables (`os.environ["ENVIRONMENT_VAR"]`) or read/files do anything else. You can run the file (`python3 settings.py`) to print the computed settings
 
 1. Create your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). You can open a new [google sheet](https://docs.google.com/spreadsheets/u/0/), and then File > Import [`spreadsheet.csv`](spreadsheet.csv) into a new google sheet. I'd also recommend setting a fixed row height to ensure images are all the same size (You can do this by doing Ctrl/⌘ + A repeatedly till the margins are selected, and then resizing one row to your desired height.) Name the sheet 'Music' (near the bottom right)
-2. Clone this repository `git clone https://github.com/seanbreckenridge/albums`, and install it using `pip install --editable .`, installing it as an editable package. This **wont** work as normal `pip install`, it must be editable
-3. Create a file named `client_secret.json` in the root directory which contains your credentials for a google sheets OAuth connection. [Tutorial here](https://console.developers.google.com); download your created credentials from [here](https://console.developers.google.com/apis/credentials)
-4. Run `python3 setup_credentials.py` to setup the Google credentials
-5. Update the SPREADSHEET_ID variable in `settings.py` (along with any other settings you see fit)
-6. (If you want to add albums and validate them with `discogs_update.py`) Create a file `discogs_token.yaml` in the root directory (info can be found [here](https://www.discogs.com/developers/), token [here](https://www.discogs.com/settings/developers)) with contents similar to:
+2. Clone this repository `git clone https://github.com/seanbreckenridge/albums`, and install it using `pip install --editable .`, installing it as an editable package. This **won't** work as normal `pip install`, it **must** be editable
+3. Create a file named `client_secret.json` in the root directory which contains your credentials for a google sheets OAuth connection. [Instructions for how to get your `client_secret.json` file here](https://pygsheets.readthedocs.io/en/staging/authorization.html); download your created credentials from [the Google credentials console](https://console.developers.google.com/apis/credentials)
+4. Run `python3 setup_credentials.py` to authenticate this with the Google account you created the spreadsheet on
+5. Update the `SPREADSHEET_ID` variable in `settings.py` (along with any other settings you see fit)
+6. (If you want to add albums and validate them with `nextalbums discogs-update`) Create a file `discogs_token.yaml` in the root directory (info can be found [here](https://www.discogs.com/developers/), token [here](https://www.discogs.com/settings/developers)) with contents like:
 
 ```
 user_agent: myPython3DiscogsClient/1.0
