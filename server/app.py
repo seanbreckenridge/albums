@@ -18,7 +18,9 @@ this_dir = os.path.dirname(__file__)
 root_dir = os.path.join(this_dir, os.pardir)
 sys.path.insert(0, root_dir)
 
-from nextalbums import get_credentials, spreadsheet_id
+from nextalbums import SETTINGS
+from nextalbums.core_gsheets import get_credentials
+from nextalbums.create_sql_statements import sql_datafile
 
 app = Flask(__name__)
 
@@ -26,9 +28,7 @@ logging.basicConfig()
 logger = logging.getLogger("waitress")
 logger.setLevel(logging.INFO)
 
-sql_dir = os.path.join(root_dir, "SQL")
-
-cache_file = os.path.join(sql_dir, "score_artist_cache.yaml")
+cache_file = sql_datafile("score_artist_cache.yaml")
 
 
 class FileCache:
@@ -70,7 +70,11 @@ def make_request() -> List[List[Any]]:
     return (
         service.spreadsheets()
         .values()
-        .get(spreadsheetId=spreadsheet_id, range="A1:L", valueRenderOption="FORMULA")
+        .get(
+            spreadsheetId=SETTINGS.SPREADSHEET_ID,
+            range="Music!A1:L",
+            valueRenderOption="FORMULA",
+        )
         .execute()
         .get("values", [])
     )

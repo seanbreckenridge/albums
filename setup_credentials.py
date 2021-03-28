@@ -6,14 +6,15 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
+from settings import CLIENT_SECRET_FILE
+
+# probably wont ever be changed, no point in putting them in settings.py?
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/sheets.googleapis.com-python-nextalbums.json
 SCOPES = "https://www.googleapis.com/auth/spreadsheets"
-CLIENT_SECRET_FILE = "client_secret.json"
 APPLICATION_NAME = "Next Albums"
 
 # Set up OAuth2 flow to obtain new credentials
-
 flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 home_dir = os.path.expanduser("~")
 credential_dir = os.path.join(home_dir, ".credentials")

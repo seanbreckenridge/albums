@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 #
 # Does upkeep, run discogs_update.py before running this.
-# Not including that here to due to its update threshold,
-# it may need to be called multiple times before its finished updating
+# Not including that here because the spreadsheet needs
+# to be sorted before running this
 
-echo "Reminder: Run discogs_update.py and sort the spreadsheet online by Year, then Album Name"
-cd "$(dirname "$0")" || exit
+THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+
+echo "Reminder: Run 'nextalbums discogs-update' and sort the spreadsheet online by Year, then Album Name"
+cd "$THIS_DIR" || exit 1
 echo "Generating csv..."
-python3 generate_csv.py
+nextalbums generate-csv
 echo "Creating SQL statements..."
-cd SQL || exit
-python3 create_statements.py
-python3 create_statements.py --use-scores
+nextalbums create-sql-statements
+nextalbums create-sql-statements -s
 echo "(use sudo password)"
 echo "updating albums..."
-sudo mysql <statements.sql
+sudo mysql <./sql_data/statements.sql
 echo "updating scorealbums..."
-sudo mysql <score_statements.sql
-cd ../src || exit
+sudo mysql <./sql_data/score_statements.sql
 echo "Updating src csv files..."
-python3 _update_from_db.py
+nextalbums update-csv-datafiles
