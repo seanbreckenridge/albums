@@ -110,7 +110,7 @@ Note: The 'Rolling Stone's 500 Greatest of All Time' is a combination of the 201
 
 [`csv_data`](csv_data) also contains 3 files that list albums I added [Manually](csv_data/Manual.csv), on a [Recommendation](csv_data/Recommendation.csv), or because of a [Relation](csv_data/Relation.csv) (I liked an artist so I added more of their works). These albums are not listed in `spreadsheet.csv`
 
-The format of all files in [csv_data](csv_data) except for [`all.csv`](csv_data/all.csv) and [`valid_albums.csv`](csv_data/valid_albums.csv) is:
+The format of all files in [`csv_data`](csv_data) except for [`all.csv`](csv_data/all.csv) and [`valid_albums.csv`](csv_data/valid_albums.csv) is:
 
 `Album Name, Artists on Cover, Year, DiscogsURL, Genres, Styles`
 
