@@ -2,6 +2,7 @@ import sys
 import re
 import os
 import time
+from typing import List
 
 import yaml
 import click
@@ -46,13 +47,13 @@ class autoincrement_analog:
             else:
                 return self.keymap[desc]  # if this was already here, return the index
 
-    def add_comma_separated_list(self, comma_separated):
+    def add_comma_separated_list(self, comma_separated: str) -> List[str]:
         return_ids = []
         # special case, since it has commas in it
         if (
             "Folk, World, & Country" in comma_separated
         ):  # special case, has commas in it.
-            comma_separated = comma_seperated.replace("Folk, World, & Country", "")
+            comma_separated = comma_separated.replace("Folk, World, & Country", "")
             return_ids.append(self.add("Folk, World, & Country"))
 
         for description in re.split("\s*,\s*", comma_separated):

@@ -8,7 +8,6 @@ from time import sleep
 
 import click
 import discogs_client  # type: ignore[import]
-from termcolor import colored  # type: ignore[import]
 from googleapiclient import discovery  # type: ignore[import]
 
 from . import SETTINGS
@@ -105,7 +104,7 @@ def prompt_changes(old_row: WorksheetRow, new_row: WorksheetRow) -> bool:
         ):
             changes.append(f"'{old_item}' → '{new_item}'")
     if changes:
-        print("\n".join([colored("CONFIRM CHANGES:", "red")] + changes))
+        print("\n".join([click.style("CONFIRM CHANGES:", fg="red")] + changes))
         return click.confirm("Confirm Changes? ")
     else:  # changes don't have to be confirmed, continue with changes
         return True
