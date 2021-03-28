@@ -13,7 +13,7 @@ from .create_sql_statements import sql_datafile
 
 
 # vendorized from stdlib to work in under python3.9
-def cache(user_function, /):
+def cache(user_function):
     'Simple lightweight unbounded cache.  Sometimes called "memoize".'
     return lru_cache(maxsize=None)(user_function)
 
@@ -43,7 +43,6 @@ def read_artist_cache() -> Dict[int, str]:
     with open(sql_datafile("score_artist_cache.yaml")) as f:
         data: Dict[int, str] = yaml.load(f, Loader=yaml.FullLoader)
     return data
-
 
 @cache
 def fetch_artist_name(artist_id: int) -> Artist:
