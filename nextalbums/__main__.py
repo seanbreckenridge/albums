@@ -8,6 +8,7 @@ from .favorites import list_favorites
 from .generate_csv import generate_csv_file
 from .create_sql_statements import create_statments
 from .export import export_data, dump_results
+from .common import eprint
 
 
 @click.group()
@@ -32,7 +33,7 @@ def export():
     items = []
     for res in export_data():
         if isinstance(res, Exception):
-            click.echo(str(res), err=True)
+            eprint(str(res))
         else:
             items.append(res)
     click.echo(dump_results(items))
@@ -53,7 +54,8 @@ def discogs_update(_resolve: bool) -> None:
 
     Gets information from the Discogs API
     """
-    update_new_entries(_resolve)
+    updated: int = update_new_entries(_resolve)
+    click.echo(f"Updated {updated} cells")
 
 
 @main.command()

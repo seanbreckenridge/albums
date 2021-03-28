@@ -1,4 +1,3 @@
-import sys
 import re
 import traceback
 import functools
@@ -12,10 +11,7 @@ from googleapiclient import discovery  # type: ignore[import]
 
 from . import SETTINGS
 from .core_gsheets import get_credentials, get_values
-from .common_types import WorksheetData, WorksheetRow
-
-update_threshold = 10  # ends the program and updates after these many updates
-update_count = 0
+from .common import WorksheetData, WorksheetRow, eprint
 
 
 @functools.lru_cache(1)
@@ -41,7 +37,7 @@ def has_discogs_data(row: WorksheetRow) -> bool:
 
 def discogs_get(_type: str, _id: int) -> Any:
     """Gets data from discogs API."""
-    print(f"[Discogs] Requesting {_id}.")
+    eprint(f"[Discogs] Requesting {_id}.")
     sleep(2)
     if _type == "master":  # if Master
         return discogsClient().master(_id).main_release
@@ -62,20 +58,16 @@ def fix_discogs_link(link: str, resolve: bool) -> str:
         if release_id:
             if resolve:
                 release_match = release_id.groups()[0]
-                print(f"Attempting to resolve release {release_match} to master.")
+                click.echo(f"Attempting to resolve release {release_match} to master.")
                 rel = discogsClient().release(int(release_match))
                 sleep(2)
                 if rel.master is not None:
-                    print(f"Resolved release {release_match} to {rel.master.id}.")
-                    return "https://www.discogs.com/master/{}".format(
-                        int(rel.master.id)
-                    )
+                    click.echo(f"Resolved release {release_match} to {rel.master.id}.")
+                    return f"https://www.discogs.com/master/{rel.master.id}"
                 else:
                     return "https://www.discogs.com/release/{}".format(release_match)
             else:
-                return "https://www.discogs.com/release/{}".format(
-                    release_id.groups()[0]
-                )
+                return f"https://www.discogs.com/release/{release_id.groups()[0]}"
         else:
             raise Exception(f"Unknown discogs link: {link}. Exiting...")
 
@@ -104,7 +96,7 @@ def prompt_changes(old_row: WorksheetRow, new_row: WorksheetRow) -> bool:
         ):
             changes.append(f"'{old_item}' → '{new_item}'")
     if changes:
-        print("\n".join([click.style("CONFIRM CHANGES:", fg="red")] + changes))
+        click.echo("\n".join([click.style("CONFIRM CHANGES:", fg="red")] + changes))
         return click.confirm("Confirm Changes? ")
     else:  # changes don't have to be confirmed, continue with changes
         return True
@@ -122,7 +114,7 @@ def update_row_with_discogs_data(row, max_length):
     row[2], row[8] = fix_discogs_artist_name(rel.artists)  # Artist Name
     row[3] = rel.year  # Year
     if row[3] == 0:  # discogs API returns 0 if year was unknown for master release
-        print(
+        eprint(
             f"Warning: Failed to get year for {id}: {row[1]}. Using old year ({original_row[3]})."
         )
         row[3] = original_row[3]
@@ -164,7 +156,7 @@ def fix_rows(values: WorksheetData, resolve: bool) -> WorksheetData:
         except discogs_client.exceptions.HTTPError:
             if "429" in str(discogs_client.exceptions.HTTPError):
                 wait_time = 30
-                print(f"[Discogs] API Limit Reached. Waiting {wait_time} seconds...")
+                eprint(f"[Discogs] API Limit Reached. Waiting {wait_time} seconds...")
                 sleep(wait_time)
             else:
                 traceback.print_exc()  # non rate-limit related error
@@ -178,7 +170,7 @@ def fix_rows(values: WorksheetData, resolve: bool) -> WorksheetData:
             if row[7] not in all_links:
                 all_links.add(row[7])
             else:  # exit if theres a duplicate discogs link (meaning duplicate entry)
-                print(f"Found duplicate of {row[7]}. Exiting...")
+                eprint(f"Found duplicate of {row[7]}. Exiting...")
                 break
 
     values.insert(0, header)  # put header back
@@ -216,13 +208,14 @@ def update_values(values, credentials):
     return request.execute()
 
 
-def update_new_entries(resolve: bool) -> None:
+def update_new_entries(resolve: bool) -> int:
+    """Returns the number of cells updated"""
     credentials = get_credentials()
     values = get_values(
         credentials=credentials, sheetRange="Music!A1:L", valueRenderOption="FORMULA"
     )
     if len(values) == 0:
-        print("No values returned")
-        sys.exit(1)
+        eprint("No values returned")
+        raise SystemExit(1)
     response = update_values(values=fix_rows(values, resolve), credentials=credentials)
-    print("Updated {} cells.".format(response["totalUpdatedCells"]))
+    return int(response["totalUpdatedCells"])

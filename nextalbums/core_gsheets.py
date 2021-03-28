@@ -1,12 +1,11 @@
 from typing import Optional, Any
 
-import click
 import httplib2  # type: ignore[import]
 from googleapiclient import discovery  # type: ignore[import]
 from oauth2client.file import Storage  # type: ignore[import]
 
 from . import SETTINGS
-from .common_types import WorksheetData
+from .common import WorksheetData, eprint
 
 
 def get_credentials():
@@ -18,12 +17,9 @@ def get_credentials():
     store = Storage(SETTINGS.CREDENTIALS_PATH)
     credentials = store.get()
     if not credentials or credentials.invalid:
-        click.echo(
-            """Credentials aren't setup properly. Run 'python3 setup_credentials.py'
-If the problem persists, delete {} and then try again""".format(
-                SETTINGS.CREDENTIALS_PATH
-            ),
-            err=True,
+        eprint(
+            f"""Credentials aren't setup properly. Run 'python3 setup_credentials.py'
+If the problem persists, delete {SETTINGS.CREDENTIALS_PATH} and then try again"""
         )
         raise SystemExit(1)
     return credentials

@@ -7,7 +7,7 @@ import click
 from prettytable import PrettyTable  # type: ignore[import]
 
 from .core_gsheets import get_values
-from .common_types import WorksheetRow, WorksheetData
+from .common import WorksheetRow, WorksheetData, eprint
 
 
 def format_for_table(r: WorksheetRow) -> WorksheetRow:
@@ -32,7 +32,7 @@ def generate_table(count: int, choose_random: bool) -> str:
         sheetRange="Music!A1:D", valueRenderOption="FORMATTED_VALUE"
     )
     if not values:
-        click.echo("No Values returned from Google API.", err=True)
+        eprint("No Values returned from Google API.")
         sys.exit(1)
     header = values.pop(0)[1:]  # pop header from values
 

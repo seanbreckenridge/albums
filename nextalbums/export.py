@@ -8,7 +8,7 @@ import orjson
 import xlrd  # type: ignore[import]
 
 from .core_gsheets import get_values
-from .common_types import WorksheetData
+from .common import WorksheetData
 from .create_sql_statements import sql_datafile
 
 
@@ -154,7 +154,7 @@ def export_data(
             score=fscore,
             album_name=album_name,
             cover_artists=artists_on_album_cover,
-            year=int(year),
+            year=iyear,
             listened_on=listened_on,
             album_artwork_url=artwork,
             discogs_url=discogs_url,

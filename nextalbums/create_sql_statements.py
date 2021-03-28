@@ -11,6 +11,7 @@ import xlrd  # type: ignore[import]
 
 
 from . import SETTINGS
+from .common import eprint
 
 
 def sql_datafile(path: str) -> str:
@@ -74,9 +75,9 @@ class cache:
         with open(self.yaml_path, "r") as js_f:
             try:
                 self.items = yaml.load(js_f, Loader=yaml.FullLoader)
-                print("[Cache] {} items loaded from cache.".format(len(self.items)))
+                click.echo("[Cache] {} items loaded from cache.".format(len(self.items)))
             except:  # file is empty or broken
-                print("[Cache] Could not load items.")
+                eprint("[Cache] Could not load items.")
                 self.items = {}
 
     def update_yaml_file(self):
@@ -88,21 +89,17 @@ class cache:
         if self.write_to_cache_periodically < 0:
             self.write_to_cache_periodically = self.write_to_cache_const
             self.update_yaml_file()
-        print("[Discogs] Downloading name for id {}".format(id))
+        click.echo(f"[Discogs] Downloading name for id {id}")
         time.sleep(2)
         # change artist names like Sugar (3) to Sugar. Discogs has these names because there may be duplicates for an artist name
         try:
             return re.sub(r"\(\d+\)$", "", discogsClient().artist(int(id)).name).strip()
         except discogs_client.exceptions.HTTPError:
-            print(
-                "Failed to name for download https://www.discogs.com/artist/{}".format(
-                    id
-                )
+            eprint(
+                f"""Failed to name for download https://www.discogs.com/artist/{id}
+That id should be removed from the credits cell, no way around this currently"""
             )
-            print(
-                "This id should be removed from the credits cell, no way around this currently."
-            )
-            sys.exit(1)
+            raise SystemExit(1)
 
     def __contains__(self, id):
         """defines the 'in' keyword on cache."""
@@ -115,7 +112,7 @@ class cache:
             self.items[194] = "Various"
             return self.items[194]
         if self.__contains__(id):
-            print("[Cache] Found name for id {} in cache".format(id))
+            click.echo("[Cache] Found name for id {} in cache".format(id))
             return self.items[int(id)]
         else:
             self.items[int(id)] = self.download_name(id)
@@ -175,10 +172,8 @@ class album:
         self.year = int(year)
         if date.strip():
             if self.score is None:
-                print(
-                    "WARNING: {} ({}) has no 'score' but has a 'listened on' date".format(
-                        self.album_name, self.cover_artist
-                    )
+                eprint(
+                    f"WARNING: {self.album_name} ({self.cover_artist}) has no 'score' but has a 'listened on' date"
                 )
             self.listened_on = xlrd.xldate_as_datetime(int(date), 0)
             self.listened_on = "{year}-{month}-{day}".format(
@@ -188,22 +183,14 @@ class album:
             )
         else:
             if self.score is not None:
-                print(
-                    "WARNING: {} ({}) has no 'listened on' date but has a 'score'".format(
-                        self.album_name, self.cover_artist
-                    )
-                )
+                eprint(f"WARNING: {self.album_name} ({self.cover_artist}) has no 'listened on' date but has a 'score'")
             self.listened_on = None
         self.album_artwork = re.search('https?:\/\/[^"]+', album_artwork)
         if self.album_artwork:
             self.album_artwork = self.album_artwork.group(0)
         else:
             self.album_artwork = None
-            print(
-                "Warning. No Album Artwork extracted from '{}' for '{}'".format(
-                    album_artwork, album_name
-                )
-            )
+            eprint(f"Warning. No Album Artwork extracted from '{album_artwork}' for '{album_name}'")
         self.discogs_url = discogs_url if discogs_url.strip() else None
 
         self.reason_id = reasons_table.add_comma_separated_list(reasons)
@@ -384,15 +371,15 @@ def create_statments(use_scores: bool) -> None:
 
     if use_scores:
         # add items that may have been added to the base cache to prevent duplicate API calls
-        print("Loading base artist cache...")
+        click.echo("Loading base artist cache...")
         base_cache = cache(artist_cache_filepath)
-        print("Loading score artist cache...")
+        click.echo("Loading score artist cache...")
         artist_cache = cache(score_artist_cache_filepath)
         for id in base_cache:
             if id not in artist_cache:
                 artist_cache.put(id, base_cache.get(id))
     else:
-        print("Loading base artist cache...")
+        click.echo("Loading base artist cache...")
         artist_cache = cache(artist_cache_filepath)
 
     reasons_table = autoincrement_analog()
@@ -405,7 +392,7 @@ def create_statments(use_scores: bool) -> None:
     score_output_file = sql_datafile("score_statements.sql")
 
     if bool(values) is False:
-        click.echo("No values returned from Google API", err=True)
+        eprint("No values returned from Google API")
         sys.exit(1)
     else:
         if use_scores:
