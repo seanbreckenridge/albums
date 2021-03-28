@@ -25,4 +25,3 @@ def generate_csv_file(write_to: str) -> None:
             padded[0] = ""
             padded[4] = ""
             csv_writer.writerow(padded)
-

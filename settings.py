@@ -7,7 +7,10 @@ import sys
 try:
     import yaml
 except ImportError:
-    print("Could not import yaml. Fix this by running: 'python3 -m pip install PyYAML'", file=sys.stderr)
+    print(
+        "Could not import yaml. Fix this by running: 'python3 -m pip install PyYAML'",
+        file=sys.stderr,
+    )
     sys.exit(1)
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
@@ -28,7 +31,9 @@ CREDENTIALS_DIR = os.path.join(os.path.expanduser("~"), ".credentials")
 if not os.path.exists(CREDENTIALS_DIR):
     os.makedirs(CREDENTIALS_DIR)
 
-CREDENTIALS_PATH = os.path.join(CREDENTIALS_DIR, "sheets.googleapis.com-python-nextalbums.json")
+CREDENTIALS_PATH = os.path.join(
+    CREDENTIALS_DIR, "sheets.googleapis.com-python-nextalbums.json"
+)
 
 # the SQL schema which has scores
 MYSQL_DATABASE_NAME = "scorealbums"
@@ -41,10 +46,12 @@ assert os.path.exists(CSV_DATADIR)
 SQL_DATADIR = os.path.join(this_dir, "sql_data")
 assert os.path.exists(SQL_DATADIR)
 
+
 def print_options():
     for name, obj in globals().items():
         if name.isupper():
             print(f"{name}: {obj}")
+
 
 if __name__ == "__main__":
     print_options()

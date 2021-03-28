@@ -24,4 +24,3 @@ def list_favorites():
     writer = csv.writer(sys.stdout, delimiter=",", quoting=csv.QUOTE_ALL)
     for r in rows:
         writer.writerow(r)
-

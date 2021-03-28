@@ -29,7 +29,9 @@ If the problem persists, delete {} and then try again""".format(
     return credentials
 
 
-def get_values(*, sheetRange: str, valueRenderOption: str, credentials: Optional[Any] = None):
+def get_values(
+    *, sheetRange: str, valueRenderOption: str, credentials: Optional[Any] = None
+):
     creds: Any
     if credentials is None:
         creds = get_credentials()

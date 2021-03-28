@@ -1,4 +1,5 @@
 ### albums
+
 A collection of CSV/SQL files containing popular/acclaimed albums, used to make a inordinate list of albums to listen to.
 
 This contains code to interact with my [spreadsheet](https://sean.fish/s/albums) -- listing the next albums I should listen to, validating the data using the Discogs API, or creating a SQL schema with the data
@@ -181,4 +182,3 @@ ids=id1,id2,id3,id4
 ```
 
 Thats cached periodically and used to pull recent albums I've listened onto my 'Media Feed' window [on my website](https://sean.fish/)
-
