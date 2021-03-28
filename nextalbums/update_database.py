@@ -2,9 +2,10 @@ import os
 import re
 import csv
 import operator
+from typing import List
 from functools import lru_cache
 
-import MySQLdb
+import MySQLdb  # type: ignore[import]
 
 from . import SETTINGS
 
@@ -19,7 +20,7 @@ def create_connection():
     )
 
 
-def write_csv(name: str, results) -> None:
+def write_csv(name: str, results: List[List[str]]) -> None:
     path = os.path.join(SETTINGS.CSV_DATADIR, name)
     with open(path, "w") as reason_file:
         csv_writer = csv.writer(reason_file, quoting=csv.QUOTE_MINIMAL)

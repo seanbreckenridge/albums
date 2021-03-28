@@ -1,7 +1,7 @@
 import click
 
 from . import SETTINGS
-from .printer import print_nextalbums
+from .generate_table import generate_table
 from .discogs_update import update_new_entries
 from .update_database import update_datafiles
 from .favorites import list_favorites
@@ -23,7 +23,7 @@ def main():
 @click.option("-j", "--json", is_flag=True, default=False, help="Print output as JSON")
 def print_next(count: int, random: bool, json: bool) -> None:
     """Print the next albums I should listen to"""
-    print_nextalbums(count, random)
+    click.echo(generate_table(count, random))
 
 
 @main.command()

@@ -1,8 +1,6 @@
-import os
 import re
 import csv
 
-from . import SETTINGS
 from .core_gsheets import get_values
 
 

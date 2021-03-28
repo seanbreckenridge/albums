@@ -1,14 +1,12 @@
 import sys
 import re
-import argparse
 import os
 import time
 
-import httplib2
-from googleapiclient import discovery
-import discogs_client
-import xlrd
 import yaml
+import click
+import discogs_client  # type: ignore[import]
+import xlrd  # type: ignore[import]
 
 
 from . import SETTINGS
@@ -19,7 +17,7 @@ def sql_datafile(path: str) -> str:
     return os.path.join(SETTINGS.SQL_DATADIR, path)
 
 
-from .core_gsheets import get_credentials, get_values
+from .core_gsheets import get_values
 from .discogs_update import discogsClient
 
 artist_cache = None
@@ -94,7 +92,7 @@ class cache:
         # change artist names like Sugar (3) to Sugar. Discogs has these names because there may be duplicates for an artist name
         try:
             return re.sub(r"\(\d+\)$", "", discogsClient().artist(int(id)).name).strip()
-        except discogs_client.exceptions.HTTPError as couldnt_find_name:
+        except discogs_client.exceptions.HTTPError:
             print(
                 "Failed to name for download https://www.discogs.com/artist/{}".format(
                     id
@@ -372,7 +370,7 @@ def statements(albums, use_score, base_table_file, statement_file):
             g.write("{}\n".format(line))
 
 
-def create_statments(use_scores: bool):
+def create_statments(use_scores: bool) -> None:
     global artist_cache
     global reasons_table
     global styles_table
@@ -405,8 +403,8 @@ def create_statments(use_scores: bool):
     score_tables_file = sql_datafile("score_base_tables.sql")
     score_output_file = sql_datafile("score_statements.sql")
 
-    if values is None:
-        print("No values returned from Google API")
+    if bool(values) is False:
+        click.echo("No values returned from Google API", err=True)
         sys.exit(1)
     else:
         if use_scores:

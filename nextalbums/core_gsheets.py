@@ -1,12 +1,12 @@
-import os
 from typing import Optional, Any
 
 import click
-import httplib2
-from googleapiclient import discovery
-from oauth2client.file import Storage
+import httplib2  # type: ignore[import]
+from googleapiclient import discovery  # type: ignore[import]
+from oauth2client.file import Storage  # type: ignore[import]
 
 from . import SETTINGS
+from .common_types import WorksheetData
 
 
 def get_credentials():
@@ -25,13 +25,13 @@ If the problem persists, delete {} and then try again""".format(
             ),
             err=True,
         )
-        sys.exit(1)
+        raise SystemExit(1)
     return credentials
 
 
 def get_values(
     *, sheetRange: str, valueRenderOption: str, credentials: Optional[Any] = None
-):
+) -> WorksheetData:
     creds: Any
     if credentials is None:
         creds = get_credentials()
@@ -56,4 +56,5 @@ def get_values(
         )
         .execute()
     )
-    return result.get("values", [])
+    data: WorksheetData = result.get("values", [])
+    return data

@@ -1,20 +1,19 @@
 import sys
 import re
-import os
 import traceback
-import argparse
 import functools
 from urllib.parse import urlparse
+from typing import List, Tuple, Any
 from time import sleep
 
-import yaml
-import discogs_client
-from distutils.util import strtobool
-from termcolor import colored
-from googleapiclient import discovery
+import click
+import discogs_client  # type: ignore[import]
+from termcolor import colored  # type: ignore[import]
+from googleapiclient import discovery  # type: ignore[import]
 
 from . import SETTINGS
 from .core_gsheets import get_credentials, get_values
+from .common_types import WorksheetData, WorksheetRow
 
 update_threshold = 10  # ends the program and updates after these many updates
 update_count = 0
@@ -27,28 +26,28 @@ def discogsClient() -> discogs_client.Client:
     )
 
 
-def has_discogs_link(row):
+def has_discogs_link(row: WorksheetRow) -> bool:
     """Returns True/False based on whether the entry has a discogs link."""
     if len(row) >= 8:
         return len(row[7].strip()) > 0
     return False
 
 
-def has_discogs_data(row):
+def has_discogs_data(row: WorksheetRow) -> bool:
     """Returns True if discogs data has been scraped for this entry before."""
     if has_discogs_link(row):
         return bool("".join(map(str.strip, row[8:])))
     return False
 
 
-def discogs_get(_type, id):
+def discogs_get(_type: str, _id: int) -> Any:
     """Gets data from discogs API."""
-    print(f"[Discogs] Requesting {id}.")
+    print(f"[Discogs] Requesting {_id}.")
     sleep(2)
     if _type == "master":  # if Master
-        return discogsClient().master(id).main_release
+        return discogsClient().master(_id).main_release
     elif _type == "release":
-        return discogsClient().release(id)
+        return discogsClient().release(_id)
     else:
         raise RuntimeError(f"Unknown discogs request type: {_type}")
 
@@ -82,7 +81,7 @@ def fix_discogs_link(link: str, resolve: bool) -> str:
             raise Exception(f"Unknown discogs link: {link}. Exiting...")
 
 
-def fix_discogs_artist_name(artists):
+def fix_discogs_artist_name(artists: List[Any]) -> Tuple[str, str]:
     """Fixes names if there are duplicates on Discogs.
     Discogs lists some artists with parens after their name to prevent duplicates."""
     artist_ids = [str(a.id) for a in artists if a.id != 0]
@@ -93,7 +92,7 @@ def fix_discogs_artist_name(artists):
     return ", ".join(artist_fixed_names), "|".join(artist_ids)
 
 
-def prompt_changes(old_row, new_row):
+def prompt_changes(old_row: WorksheetRow, new_row: WorksheetRow) -> bool:
     """Asks the user to confirm changes resulting from discogs data."""
     old_row = old_row[1:]
     new_row = new_row[1:]
@@ -107,7 +106,7 @@ def prompt_changes(old_row, new_row):
             changes.append(f"'{old_item}' → '{new_item}'")
     if changes:
         print("\n".join([colored("CONFIRM CHANGES:", "red")] + changes))
-        return strtobool(input("Confirm Changes? "))
+        return click.confirm("Confirm Changes? ")
     else:  # changes don't have to be confirmed, continue with changes
         return True
 
@@ -144,7 +143,7 @@ def update_row_with_discogs_data(row, max_length):
         return original_row
 
 
-def _fix_row(row, max_no_of_columns, resolve: bool):
+def _fix_row(row: WorksheetRow, max_no_of_columns: int, resolve: bool) -> WorksheetRow:
     """Updates with Discogs data if necessary."""
     if has_discogs_link(row):  # if this has a discogs link
         row[7] = fix_discogs_link(row[7], resolve)  # fix link
@@ -153,7 +152,7 @@ def _fix_row(row, max_no_of_columns, resolve: bool):
     return row
 
 
-def fix_rows(values, resolve: bool):
+def fix_rows(values: WorksheetData, resolve: bool) -> WorksheetData:
     """Error Handling, exits cleanly on exceptions."""
     header = values.pop(0)
     max_no_of_columns = len(header)
@@ -218,7 +217,7 @@ def update_values(values, credentials):
     return request.execute()
 
 
-def update_new_entries(resolve: bool):
+def update_new_entries(resolve: bool) -> None:
     credentials = get_credentials()
     values = get_values(
         credentials=credentials, sheetRange="Music!A1:L", valueRenderOption="FORMULA"

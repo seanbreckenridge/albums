@@ -1,16 +1,13 @@
-import os
 import sys
 import textwrap
 import itertools
 import random
-from functools import lru_cache
 
 import click
-from prettytable import PrettyTable
+from prettytable import PrettyTable  # type: ignore[import]
 
-
-from . import SETTINGS
 from .core_gsheets import get_values
+from .common_types import WorksheetRow, WorksheetData
 
 
 text_wrapper = textwrap.TextWrapper(
@@ -18,15 +15,17 @@ text_wrapper = textwrap.TextWrapper(
 )
 
 
-def format_for_table(r):
+def format_for_table(r: WorksheetRow) -> WorksheetRow:
     """Formats a row for the table, breaking the text into multiple lines if its above 25 characters in length."""
     return ["\n".join(text_wrapper.wrap(x)) for x in r]
 
 
-def print_nextalbums(count: int, choose_random: bool) -> None:
+def generate_table(count: int, choose_random: bool) -> str:
 
     # grab values from sheet
-    values = get_values(sheetRange="Music!A1:D", valueRenderOption="FORMATTED_VALUE")
+    values: WorksheetData = get_values(
+        sheetRange="Music!A1:D", valueRenderOption="FORMATTED_VALUE"
+    )
     if not values:
         click.echo("No Values returned from Google API.", err=True)
         sys.exit(1)
@@ -38,7 +37,7 @@ def print_nextalbums(count: int, choose_random: bool) -> None:
     for header_name in header:
         p_table.align[header_name] = "l"  # align left
 
-    not_listened_to = [
+    not_listened_to: WorksheetData = [
         [album, artist, year]
         for (score, album, artist, year) in values
         if not score.strip()
@@ -50,4 +49,4 @@ def print_nextalbums(count: int, choose_random: bool) -> None:
     for row in itertools.islice(not_listened_to, count):
         p_table.add_row(format_for_table(row))
 
-    click.echo(str(p_table))
+    return str(p_table)

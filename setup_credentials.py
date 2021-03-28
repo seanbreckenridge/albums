@@ -1,10 +1,9 @@
 import os
 import argparse
 
-import httplib2
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
+from oauth2client import client  # type: ignore[import]
+from oauth2client import tools  # type: ignore[import]
+from oauth2client.file import Storage  # type: ignore[import]
 
 from settings import CLIENT_SECRET_FILE
 

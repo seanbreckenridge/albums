@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-import os
-
 import csv
-
-from datetime import datetime
-from typing import List, Sequence
 
 from .update_database import create_connection
 
