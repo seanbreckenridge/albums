@@ -75,7 +75,9 @@ class cache:
         with open(self.yaml_path, "r") as js_f:
             try:
                 self.items = yaml.load(js_f, Loader=yaml.FullLoader)
-                click.echo("[Cache] {} items loaded from cache.".format(len(self.items)))
+                click.echo(
+                    "[Cache] {} items loaded from cache.".format(len(self.items))
+                )
             except:  # file is empty or broken
                 eprint("[Cache] Could not load items.")
                 self.items = {}
@@ -183,14 +185,18 @@ class album:
             )
         else:
             if self.score is not None:
-                eprint(f"WARNING: {self.album_name} ({self.cover_artist}) has no 'listened on' date but has a 'score'")
+                eprint(
+                    f"WARNING: {self.album_name} ({self.cover_artist}) has no 'listened on' date but has a 'score'"
+                )
             self.listened_on = None
         self.album_artwork = re.search('https?:\/\/[^"]+', album_artwork)
         if self.album_artwork:
             self.album_artwork = self.album_artwork.group(0)
         else:
             self.album_artwork = None
-            eprint(f"Warning. No Album Artwork extracted from '{album_artwork}' for '{album_name}'")
+            eprint(
+                f"Warning. No Album Artwork extracted from '{album_artwork}' for '{album_name}'"
+            )
         self.discogs_url = discogs_url if discogs_url.strip() else None
 
         self.reason_id = reasons_table.add_comma_separated_list(reasons)
