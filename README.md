@@ -32,12 +32,14 @@ Commands:
 
 Four of those commands are related to updating the data files here:
 
-- `nextalbums discogs-update` uses the [Discogs API](https://github.com/discogs/discogs_client) to fetch and validate the data on [the spreadsheet](https://sean.fish/s/albums)
-- `nextalbums favorites` queries my favorite albums using the live SQL instance
-- `nextalbums generate-csv` updates [`spreadsheet.csv`](./spreadsheet.csv) file
+- `nextalbums discogs-update` uses the [Discogs API](https://github.com/discogs/discogs_client) to fetch metadata and validate the data on [the spreadsheet](https://sean.fish/s/albums)
+- `nextalbums generate-csv` updates the [`spreadsheet.csv`](./spreadsheet.csv) file
 - `nextalbums update-csv-datafiles` queries the live SQL instance to update the files in [`csv_data`](./csv_data)
+- `nextalbums create-sql-statements` uses the data from the spreadsheet to generate a `.sql` file, which when run creates the schema above. The [`sql_data/score_statements.sql`](sql_data/score_statements.sql) file contains all the data for my scores/listen on date, so I can query all that info through SQL. See below for example queries.
 
 This entire process is managed by me using `./update`, which calls those in the required order to update all the datafiles here
+
+`nextalbums favorites` is a small script that queries my favorite albums using the live SQL instance
 
 The part of this I use most often is `nextalbums print-next`, which prints the next albums from the spreadsheet I should listen to:
 
@@ -61,7 +63,7 @@ $ nextalbums print-next
 +--------------------------------+---------------------------+------+
 ```
 
-`nextalbums export` exports the entire active spreadsheet to JSON, extracting names out of the SQL cache:
+`nextalbums export` exports the entire active spreadsheet to JSON, extracting names out of the `sql_data` YAML cache files:
 
 ```JSON
 {
@@ -124,7 +126,7 @@ Configuration for this is handled by modifying the `settings.py` file in this di
 2. Clone this repository `git clone https://github.com/seanbreckenridge/albums`, and install it using `pip install --editable .`, installing it as an editable package. This **won't** work as normal `pip install`, it **must** be editable
 3. Create a file named `client_secret.json` in the root directory which contains your credentials for a google sheets OAuth connection. [Instructions for how to get your `client_secret.json` file here](https://pygsheets.readthedocs.io/en/staging/authorization.html); download your created credentials from [the Google credentials console](https://console.developers.google.com/apis/credentials)
 4. Run `python3 setup_credentials.py` to authenticate this with the Google account you created the spreadsheet on
-5. Update the `SPREADSHEET_ID` variable in `settings.py` (along with any other settings you see fit)
+5. Update the `SPREADSHEET_ID` variable in `settings.py` - the ID is after the `/d/` in the URL when viewing it in Google Sheets
 6. (If you want to add albums and validate them with `nextalbums discogs-update`) Create a file `discogs_token.yaml` in the root directory (info can be found [here](https://www.discogs.com/developers/), token [here](https://www.discogs.com/settings/developers)) with contents like:
 
 ```
@@ -141,6 +143,8 @@ token: !!str FDJjksdfJkJFDNMoiweiIRWkj
 It can be run with the flag `--use-scores`, which adds the "Score" and "Listened On" columns to the "Album" Table, and creates the file `score_statements.sql`
 
 Running it _without_ the `--use-scores` flag is close to what `statements.csv` in the root directory chooses as valid albums - only albums that have won at least 1 award, disregarding any albums I added to the spreadsheet manually, by relation, or on a recommendation.
+
+This works on both MySQL/MariaDB.
 
 ##### Example Queries:
 
