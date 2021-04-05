@@ -11,12 +11,16 @@ from .export import export_data, dump_results
 from .common import eprint
 
 
-@click.group()
-def main():
+@click.group(invoke_without_command=True)
+@click.pass_context
+def main(ctx: click.Context) -> None:
     """
     Interact with my albums spreadsheet!
     """
-    pass
+    # run print-next if I didn't specify anything else
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(print_next)
+
 
 
 @main.command()
