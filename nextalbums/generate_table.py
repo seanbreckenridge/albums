@@ -7,11 +7,7 @@ import click
 from prettytable import PrettyTable  # type: ignore[import]
 
 from .core_gsheets import get_values
-from .common import WorksheetRow, WorksheetData, eprint
-
-
-def format_for_table(r: WorksheetRow) -> WorksheetRow:
-    """Formats a row for the table, breaking the text into multiple lines if its above 25 characters in length."""
+from .common import WorksheetData, eprint
 
 
 def generate_table(count: int, choose_random: bool) -> str:
@@ -34,6 +30,7 @@ def generate_table(count: int, choose_random: bool) -> str:
     if not values:
         eprint("No Values returned from Google API.")
         sys.exit(1)
+
     header = values.pop(0)[1:]  # pop header from values
 
     # setup pretty table
