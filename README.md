@@ -2,9 +2,23 @@
 
 A collection of CSV/SQL files containing popular/acclaimed albums, used to make a inordinate list of albums to listen to.
 
+This started by me merging a bunch of lists of music to listen to:
+
+- [1001 Albums You Must Hear Before You Die](https://en.wikipedia.org/wiki/1001_Albums_You_Must_Hear_Before_You_Die) (merging multiple versions)
+- [Rolling Stones' 500 Greatest Albums of All Time](https://www.rollingstone.com/music/music-lists/best-albums-of-all-time-1062063/)
+- [NME: 500 Greatest Albums of All Time](https://www.albumoftheyear.org/list/209-nme-the-500-greatest-albums-of-all-time/)
+- [Pitchforks Album of the Year](https://www.albumoftheyear.org/publication/1-pitchfork/lists/) (Just the Top Album)
+- Albums that have won a:
+  - [Mercury Prize](https://en.wikipedia.org/wiki/Mercury_Prize)
+  - [Brit Award](https://en.wikipedia.org/wiki/BRIT_Award_for_British_Album_of_the_Year)
+  - [AMA](https://en.wikipedia.org/wiki/American_Music_Awards)
+  - [Grammy](https://en.wikipedia.org/wiki/Grammy_Award) (Any category)
+
+None of these sources are particularly perfect or complete, but they make me to listen to some music I otherwise may have not given a chance.
+
 This contains code to interact with my [spreadsheet](https://sean.fish/s/albums) -- listing the next albums I should listen to, validating the data using the Discogs API, or creating a SQL schema with the data
 
-If you just want the data, see [`csv_data`](./csv_data) and [`sql_data`](./sql_data) for the sources/data. [`spreadsheets.csv`](./spreadsheet.csv) can be used to make your own spreadsheet, [`sql_data/statements.sql`](sql_data/statements.sql) is similar to that for SQL. I update these files periodically, whenever I update my own spreadsheet
+If you just want the data, see [`csv_data`](./csv_data) and [`sql_data`](./sql_data) for the sources/data. [`spreadsheets.csv`](./spreadsheet.csv) can be used to make your own spreadsheet, [`sql_data/score_statements.sql`](sql_data/score_statements.sql) is similar to that for SQL. I update these files periodically, whenever I update my own spreadsheet
 
 ![](./.github/images/diagram.png)
 
@@ -37,7 +51,7 @@ Four of those commands are related to updating the data files here:
 - `nextalbums update-csv-datafiles` queries the live SQL instance to update the files in [`csv_data`](./csv_data)
 - `nextalbums create-sql-statements` uses the data from the spreadsheet to generate a `.sql` file, which when run creates the schema above. The [`sql_data/score_statements.sql`](sql_data/score_statements.sql) file contains all the data for my scores/listen on date, so I can query all that info through SQL. See below for example queries.
 
-This entire process is managed by me using `./update`, which calls those in the required order to update all the datafiles here
+This entire process is managed by me using `./update`, which calls those in the required order to update all the data here
 
 `nextalbums favorites` is a small script that queries my favorite albums using the live SQL instance
 
@@ -122,7 +136,7 @@ The format of all files in [`csv_data`](csv_data) except for [`all.csv`](csv_dat
 
 Configuration for this is handled by modifying the `settings.py` file in this directory. Since that is just a python file, you're free to modify that to pull items out of environment variables (`os.environ["ENVIRONMENT_VAR"]`) or read/files do anything else. You can run the file (`python3 settings.py`) to print the computed settings
 
-1. Create your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). You can open a new [google sheet](https://docs.google.com/spreadsheets/u/0/), and then File > Import [`spreadsheet.csv`](spreadsheet.csv) into a new google sheet. I'd also recommend setting a fixed row height to ensure images are all the same size (You can do this by doing Ctrl/⌘ + A repeatedly till the margins are selected, and then resizing one row to your desired height.) Name the sheet 'Music' (near the bottom right)
+1. Create your own copy of the [spreadsheet](https://docs.google.com/spreadsheets/d/12htSAMg67czl8cpkj1mX0TuAFvqL_PJLI4hv1arG5-M/edit#gid=1451660661). You can open a new [google sheet](https://docs.google.com/spreadsheets/u/0/), and then File > Import [`spreadsheet.csv`](spreadsheet.csv) into a new google sheet. I'd also recommend setting a fixed row height to ensure images are all the same size (You can do this by doing Ctrl/⌘ + A repeatedly till the margins are selected, and then resizing one row to your desired height.) Name the sheet `Music` (near the bottom right)
 2. Clone this repository `git clone https://github.com/seanbreckenridge/albums`, and install it using `pip install --editable .`, installing it as an editable package. This **won't** work as normal `pip install`, it **must** be editable
 3. Create a file named `client_secret.json` in the root directory which contains your credentials for a google sheets OAuth connection. [Instructions for how to get your `client_secret.json` file here](https://pygsheets.readthedocs.io/en/staging/authorization.html); download your created credentials from [the Google credentials console](https://console.developers.google.com/apis/credentials)
 4. Run `python3 setup_credentials.py` to authenticate this with the Google account you created the spreadsheet on
