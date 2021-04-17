@@ -224,6 +224,19 @@ ORDER BY `Average Score` DESC
 ;
 ```
 
+Selecting for a specific genre:
+
+```SQL
+SELECT Album.Name, Album.CoverArtists, Album.Year, Album.Score
+FROM Album
+JOIN AlbumGenre
+  ON Album.AlbumID = AlbumGenre.AlbumID
+JOIN Genre
+  ON AlbumGenre.GenreID = Genre.GenreID
+WHERE Album.Score IS NOT NULL AND Genre.Description = "Funk / Soul"
+ORDER BY Album.Score DESC;
+```
+
 ### server
 
 [`server`](./server) includes a flask server which grabs current information from spreadsheet:
