@@ -3,14 +3,12 @@ import re
 import csv
 import operator
 from typing import List
-from functools import lru_cache
 
 import MySQLdb  # type: ignore[import]
 
 from . import SETTINGS
 
 
-@lru_cache(1)
 def create_connection():
     return MySQLdb.connect(
         host="localhost",

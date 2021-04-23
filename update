@@ -5,18 +5,27 @@
 # to be sorted before running this
 
 THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+cd "${THIS_DIR}" || exit 1
+
+SETTINGS_OUT="$(python3 settings.py)" || exit $?
+
+extract_from_settings() {
+	grep "${1:?Must provide settings argument}" <<<"$SETTINGS_OUT" | cut -d':' -f2-
+}
+
+# get arguments from settings file
+SQL_USERNAME="$(extract_from_settings 'MYSQL_DATABASE_USERNAME')" || exit $?
+SQL_PASSWORD="$(extract_from_settings 'MYSQL_DATABASE_PASSWORD')" || exit $?
 
 echo "Reminder: Run 'nextalbums discogs-update' and sort the spreadsheet online by Year, then Album Name"
-cd "$THIS_DIR" || exit 1
 echo "Generating csv..."
 nextalbums generate-csv
 echo "Creating SQL statements..."
 nextalbums create-sql-statements
 nextalbums create-sql-statements -s
-echo "(use sudo password)"
 echo "updating albums..."
-sudo mysql <./sql_data/statements.sql
+mysql -u "${SQL_USERNAME}" -p"${SQL_PASSWORD}" <./sql_data/statements.sql
 echo "updating scorealbums..."
-sudo mysql <./sql_data/score_statements.sql
+mysql -u "${SQL_USERNAME}" -p"${SQL_PASSWORD}" <./sql_data/score_statements.sql
 echo "Updating src csv files..."
 nextalbums update-csv-datafiles

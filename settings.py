@@ -50,7 +50,7 @@ assert os.path.exists(SQL_DATADIR)
 def print_options():
     for name, obj in globals().items():
         if name.isupper():
-            print(f"{name}: {obj}")
+            print(f"{name}:{obj}")
 
 
 if __name__ == "__main__":

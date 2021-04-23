@@ -22,7 +22,6 @@ def main(ctx: click.Context) -> None:
         ctx.invoke(print_next)
 
 
-
 @main.command()
 @click.argument("COUNT", default=10, type=int)
 @click.option("-r", "--random", is_flag=True, default=False, help="Print random albums")
@@ -79,7 +78,8 @@ def favorites() -> None:
 @main.command()
 def generate_csv() -> None:
     """Generate the spreadsheet.csv file in the root dir"""
-    generate_csv_file(SETTINGS.BASE_SPREADSHEETS_CSV_FILE)
+    with open(SETTINGS.BASE_SPREADSHEETS_CSV_FILE, "w") as f:
+        generate_csv_file(f)
     click.echo(f"Wrote to {SETTINGS.BASE_SPREADSHEETS_CSV_FILE} successfully.")
 
 
