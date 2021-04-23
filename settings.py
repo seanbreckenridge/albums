@@ -55,4 +55,3 @@ def print_options():
 
 if __name__ == "__main__":
     print_options()
-    pass
