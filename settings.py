@@ -3,6 +3,7 @@
 
 import os
 import sys
+import shlex
 
 try:
     import yaml
@@ -50,7 +51,7 @@ assert os.path.exists(SQL_DATADIR)
 def print_options():
     for name, obj in globals().items():
         if name.isupper():
-            print(f"{name}:{obj}")
+            print(f"{name}={shlex.quote(str(obj))}")
 
 
 if __name__ == "__main__":

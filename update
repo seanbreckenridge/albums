@@ -4,18 +4,14 @@
 # Not including that here because the spreadsheet needs
 # to be sorted before running this
 
+set -o pipefail
+set -u
+
 THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 cd "${THIS_DIR}" || exit 1
 
-SETTINGS_OUT="$(python3 settings.py)" || exit $?
-
-extract_from_settings() {
-	grep "${1:?Must provide settings argument}" <<<"$SETTINGS_OUT" | cut -d':' -f2-
-}
-
-# get arguments from settings file
-SQL_USERNAME="$(extract_from_settings 'MYSQL_DATABASE_USERNAME')" || exit $?
-SQL_PASSWORD="$(extract_from_settings 'MYSQL_DATABASE_PASSWORD')" || exit $?
+# settings.py prints eval-able output
+eval "$(python3 settings.py)" || exit $?
 
 echo "Reminder: Run 'nextalbums discogs-update' and sort the spreadsheet online by Year, then Album Name"
 echo "Generating csv..."
@@ -24,8 +20,8 @@ echo "Creating SQL statements..."
 nextalbums create-sql-statements
 nextalbums create-sql-statements -s
 echo "updating albums..."
-mysql -u "${SQL_USERNAME}" -p"${SQL_PASSWORD}" <./sql_data/statements.sql
+mysql -u "${MYSQL_DATABASE_USERNAME}" -p"${MYSQL_DATABASE_PASSWORD}" <./sql_data/statements.sql
 echo "updating scorealbums..."
-mysql -u "${SQL_USERNAME}" -p"${SQL_PASSWORD}" <./sql_data/score_statements.sql
+mysql -u "${MYSQL_DATABASE_USERNAME}" -p"${MYSQL_DATABASE_PASSWORD}" <./sql_data/score_statements.sql
 echo "Updating src csv files..."
 nextalbums update-csv-datafiles
