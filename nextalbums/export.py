@@ -3,7 +3,6 @@ import re
 import datetime
 from time import strptime
 from pathlib import Path
-from functools import lru_cache
 from typing import NamedTuple, List, Iterator, Optional, Any, Union, Dict
 
 import yaml
@@ -11,14 +10,9 @@ import orjson
 import xlrd  # type: ignore[import]
 
 from .core_gsheets import get_values
-from .common import WorksheetData
+from .common import WorksheetData, split_comma_separated
 from .create_sql_statements import sql_datafile
-
-
-# vendorized from stdlib to work in under python3.9
-def cache(user_function):
-    'Simple lightweight unbounded cache.  Sometimes called "memoize".'
-    return lru_cache(maxsize=None)(user_function)
+from .common import cache
 
 
 class Artist(NamedTuple):
@@ -51,21 +45,6 @@ def read_artist_cache() -> Dict[int, str]:
 @cache
 def fetch_artist_name(artist_id: int) -> Artist:
     return Artist(artist_id=artist_id, artist_name=read_artist_cache().get(artist_id))
-
-
-@cache
-def split_comma_separated(comma_separated: str) -> List[str]:
-    """Split comma separated string into list"""
-    return_names = []
-    # special case, since it has commas in it
-    if "Folk, World, & Country" in comma_separated:  # special case, has commas in it.
-        comma_separated = comma_separated.replace("Folk, World, & Country", "")
-        return_names.append("Folk, World, & Country")
-
-    for description in re.split(r"\s*,\s*", comma_separated):
-        if description.strip():
-            return_names.append(description.strip())
-    return return_names
 
 
 # optionally can provide a datasource, which returns

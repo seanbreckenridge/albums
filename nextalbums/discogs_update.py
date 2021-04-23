@@ -58,11 +58,11 @@ def fix_discogs_link(link: str, resolve: bool) -> str:
         if release_id:
             if resolve:
                 release_match = release_id.groups()[0]
-                click.echo(f"Attempting to resolve release {release_match} to master.")
+                eprint(f"Attempting to resolve release {release_match} to master.")
                 rel = discogsClient().release(int(release_match))
                 sleep(2)
                 if rel.master is not None:
-                    click.echo(f"Resolved release {release_match} to {rel.master.id}.")
+                    eprint(f"Resolved release {release_match} to {rel.master.id}.")
                     return f"https://www.discogs.com/master/{rel.master.id}"
                 else:
                     return "https://www.discogs.com/release/{}".format(release_match)
@@ -96,7 +96,7 @@ def prompt_changes(old_row: WorksheetRow, new_row: WorksheetRow) -> bool:
         ):
             changes.append(f"'{old_item}' → '{new_item}'")
     if changes:
-        click.echo("\n".join([click.style("CONFIRM CHANGES:", fg="red")] + changes))
+        eprint("\n".join([click.style("CONFIRM CHANGES:", fg="red")] + changes))
         return click.confirm("Confirm Changes? ")
     else:  # changes don't have to be confirmed, continue with changes
         return True

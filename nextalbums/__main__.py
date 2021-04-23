@@ -5,7 +5,7 @@ from .generate_table import generate_table
 from .discogs_update import update_new_entries
 from .update_database import update_datafiles
 from .favorites import list_favorites
-from .generate_csv import generate_csv_file
+from .generate_csv import write_to_csv_file
 from .create_sql_statements import create_statments
 from .export import export_data, dump_results
 from .common import eprint
@@ -58,7 +58,7 @@ def discogs_update(_resolve: bool) -> None:
     Gets information from the Discogs API
     """
     updated: int = update_new_entries(_resolve)
-    click.echo(f"Updated {updated} cells")
+    eprint(f"Updated {updated} cells")
 
 
 @main.command()
@@ -79,8 +79,8 @@ def favorites() -> None:
 def generate_csv() -> None:
     """Generate the spreadsheet.csv file in the root dir"""
     with open(SETTINGS.BASE_SPREADSHEETS_CSV_FILE, "w") as f:
-        generate_csv_file(f)
-    click.echo(f"Wrote to {SETTINGS.BASE_SPREADSHEETS_CSV_FILE} successfully.")
+        write_to_csv_file(f)
+    eprint(f"Wrote to {SETTINGS.BASE_SPREADSHEETS_CSV_FILE} successfully.")
 
 
 @main.command()

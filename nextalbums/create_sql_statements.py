@@ -2,7 +2,7 @@ import sys
 import re
 import os
 import time
-from typing import List
+from typing import List, Dict
 
 import yaml
 import click
@@ -11,7 +11,7 @@ import xlrd  # type: ignore[import]
 
 
 from . import SETTINGS
-from .common import eprint
+from .common import split_comma_separated, eprint
 
 
 def sql_datafile(path: str) -> str:
@@ -32,11 +32,11 @@ class autoincrement_analog:
     """class to manage a variable number of reasons/genres/styles, and connecting them to surrogate ids"""
 
     def __init__(self):
-        self.keymap = {}
+        # e.g., name of reason -> reason id
+        self.keymap: Dict[str, int] = {}
 
-    def add(self, desc):
+    def add(self, desc: str) -> int:
         """description (e.g. Rock/1001 Albums/Funk) to add to the list. Returns the ID this description belongs to"""
-        # if empty
         if len(self.keymap) == 0:
             self.keymap[desc] = 1
             return self.keymap[desc]
@@ -48,22 +48,14 @@ class autoincrement_analog:
             else:
                 return self.keymap[desc]  # if this was already here, return the index
 
-    def add_comma_separated_list(self, comma_separated: str) -> List[str]:
-        return_ids = []
-        # special case, since it has commas in it
-        if (
-            "Folk, World, & Country" in comma_separated
-        ):  # special case, has commas in it.
-            comma_separated = comma_separated.replace("Folk, World, & Country", "")
-            return_ids.append(self.add("Folk, World, & Country"))
-
-        for description in re.split("\s*,\s*", comma_separated):
-            if description.strip():
-                return_ids.append(self.add(description.strip()))
+    def add_comma_separated_list(self, comma_separated: str) -> List[int]:
+        return_ids: List[int] = []
+        for name in split_comma_separated(comma_separated):
+            return_ids.append(self.add(name))
         return return_ids
 
 
-class cache:
+class APICache:
     """class to manage caching API requests for artist names"""
 
     def __init__(self, yaml_path):
@@ -75,9 +67,7 @@ class cache:
         with open(self.yaml_path, "r") as js_f:
             try:
                 self.items = yaml.load(js_f, Loader=yaml.FullLoader)
-                click.echo(
-                    "[Cache] {} items loaded from cache.".format(len(self.items))
-                )
+                eprint(f"[Cache] {len(self.items)} items loaded from cache.")
             except:  # file is empty or broken
                 eprint("[Cache] Could not load items.")
                 self.items = {}
@@ -91,7 +81,7 @@ class cache:
         if self.write_to_cache_periodically < 0:
             self.write_to_cache_periodically = self.write_to_cache_const
             self.update_yaml_file()
-        click.echo(f"[Discogs] Downloading name for id {id}")
+        eprint(f"[Discogs] Downloading name for id {id}")
         time.sleep(2)
         # change artist names like Sugar (3) to Sugar. Discogs has these names because there may be duplicates for an artist name
         try:
@@ -108,13 +98,12 @@ That id should be removed from the credits cell, no way around this currently"""
         return int(id) in self.items
 
     def get(self, id):
-        if (
-            str(id) == "194"
-        ):  # Various Artists; this doesnt have a page on discogs, its just a placeholder
+        # Various Artists; this doesnt have a page on discogs, its just a placeholder
+        if str(id) == "194":
             self.items[194] = "Various"
             return self.items[194]
         if self.__contains__(id):
-            click.echo("[Cache] Found name for id {} in cache".format(id))
+            eprint("[Cache] Found name for id {} in cache".format(id))
             return self.items[int(id)]
         else:
             self.items[int(id)] = self.download_name(id)
@@ -203,23 +192,18 @@ class album:
         self.genre_id = genres_table.add_comma_separated_list(genres)
         self.style_id = styles_table.add_comma_separated_list(styles)
 
+        # loop over both main and other artists
         self.main_artists = []
-        for main_id in main_artists.strip().split("|"):
-            if main_id.strip():
-                if main_id not in artist_cache:
-                    artist_cache.get(
-                        main_id
-                    )  # download name so we can get it from cache later
-                self.main_artists.append(main_id)
-
         self.other_artists = []
-        for other_id in credits.strip().split("|"):
-            if other_id.strip():
-                if other_id not in artist_cache:
-                    artist_cache.get(
-                        other_id
-                    )  # download name so we can get it from cache later
-                self.other_artists.append(other_id)
+        for (artist_list, celled_list) in ((self.main_artists, main_artists), (self.other_artists, credits)):
+            # from the google sheet, like 4934|439434|9293011
+            for artist_id in celled_list.strip().split("|"):
+                artist_id = artist_id.strip()
+                if len(artist_id) > 0:
+                    if artist_id not in artist_cache:
+                        # download name so we can get it from cache later
+                        artist_cache.get(artist_id)
+                    artist_list.append(artist_id)
 
 
 def statements(albums, use_score, base_table_file, statement_file):
@@ -364,11 +348,16 @@ def statements(albums, use_score, base_table_file, statement_file):
             g.write("{}\n".format(line))
 
 
+global_warning = "Can't call create_statments more than once per python process, easiest to use the CLI interface and call this through 'nextalbums create-sql-statements'"
+
+
 def create_statments(use_scores: bool) -> None:
     global artist_cache
     global reasons_table
     global styles_table
     global genres_table
+
+    assert reasons_table is None, global_warning
 
     artist_cache_filepath = sql_datafile("artist_cache.yaml")
     score_artist_cache_filepath = sql_datafile("score_artist_cache.yaml")
@@ -377,16 +366,16 @@ def create_statments(use_scores: bool) -> None:
 
     if use_scores:
         # add items that may have been added to the base cache to prevent duplicate API calls
-        click.echo("Loading base artist cache...")
-        base_cache = cache(artist_cache_filepath)
-        click.echo("Loading score artist cache...")
-        artist_cache = cache(score_artist_cache_filepath)
+        eprint("Loading base artist cache...")
+        base_cache = APICache(artist_cache_filepath)
+        eprint("Loading score artist cache...")
+        artist_cache = APICache(score_artist_cache_filepath)
         for id in base_cache:
             if id not in artist_cache:
                 artist_cache.put(id, base_cache.get(id))
     else:
-        click.echo("Loading base artist cache...")
-        artist_cache = cache(artist_cache_filepath)
+        eprint("Loading base artist cache...")
+        artist_cache = APICache(artist_cache_filepath)
 
     reasons_table = autoincrement_analog()
     genres_table = autoincrement_analog()

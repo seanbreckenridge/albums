@@ -3,12 +3,13 @@ from typing import Optional, Any
 import httplib2  # type: ignore[import]
 from googleapiclient import discovery  # type: ignore[import]
 from oauth2client.file import Storage  # type: ignore[import]
+from oauth2client.client import OAuth2Credentials  # type: ignore[import]
 
 from . import SETTINGS
 from .common import WorksheetData, eprint
 
 
-def get_credentials():
+def get_credentials() -> OAuth2Credentials:
     """Gets valid user credentials from storage.
 
     If nothing has been stored, or if the stored credentials are invalid,

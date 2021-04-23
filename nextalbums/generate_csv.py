@@ -6,7 +6,7 @@ from typing import TextIO
 from .core_gsheets import get_values
 
 
-def generate_csv_file(buf: TextIO) -> None:
+def write_to_csv_file(buf: TextIO) -> None:
     values = get_values(sheetRange="Music!A2:L", valueRenderOption="FORMULA")
     values = [
         row
