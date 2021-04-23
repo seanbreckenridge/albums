@@ -4,7 +4,6 @@
 # Not including that here because the spreadsheet needs
 # to be sorted before running this
 
-set -o pipefail
 set -u
 
 THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
