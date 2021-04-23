@@ -2,7 +2,7 @@ import sys
 import re
 import os
 import time
-from typing import List, Dict
+from typing import List, Dict, Any, Optional, NamedTuple
 
 import yaml
 import click
@@ -11,7 +11,7 @@ import xlrd  # type: ignore[import]
 
 
 from . import SETTINGS
-from .common import split_comma_separated, eprint
+from .common import split_comma_separated, eprint, filter_personal_reasons
 
 
 def sql_datafile(path: str) -> str:
@@ -22,13 +22,8 @@ def sql_datafile(path: str) -> str:
 from .core_gsheets import get_values
 from .discogs_update import discogsClient
 
-artist_cache = None
-reasons_table = None
-genres_table = None
-styles_table = None
 
-
-class autoincrement_analog:
+class AutoIncrementAnalog:
     """class to manage a variable number of reasons/genres/styles, and connecting them to surrogate ids"""
 
     def __init__(self):
@@ -58,7 +53,7 @@ class autoincrement_analog:
 class APICache:
     """class to manage caching API requests for artist names"""
 
-    def __init__(self, yaml_path):
+    def __init__(self, yaml_path: str):
         self.yaml_path = yaml_path
         self.write_to_cache_const = 25
         self.write_to_cache_periodically = self.write_to_cache_const
@@ -116,6 +111,13 @@ That id should be removed from the credits cell, no way around this currently"""
         return self.items.__iter__()
 
 
+class Context(NamedTuple):
+    artist_cache: APICache
+    reasons_table: AutoIncrementAnalog
+    genres_table: AutoIncrementAnalog
+    styles_table: AutoIncrementAnalog
+
+
 def escape_apostrophes(input_str):
     """Escapes strings for SQL insert statements"""
     if "'" in input_str:
@@ -132,11 +134,7 @@ def quote(input_str):
 class album:
     """data for each album"""
 
-    def __init__(self, vals):
-        global artist_cache
-        global reasons_table
-        global styles_table
-        global genres_table
+    def __init__(self, vals: List[Any], *, ctx: Context):
         #  add empty rows to places where spreadsheet had no values
         while len(vals) < 12:
             vals.append("")
@@ -154,12 +152,13 @@ class album:
             styles,
             credits,
         ) = map(str, vals)
+        self.score: Optional[float]
         try:
             self.score = float(score)
         except:  # could be empty or 'can't find'
             self.score = None
-        self.album_name = album_name
-        self.cover_artist = artists_on_album_cover
+        self.album_name: str = album_name
+        self.cover_artist: str = artists_on_album_cover
         self.year = int(year)
         if date.strip():
             if self.score is None:
@@ -178,9 +177,10 @@ class album:
                     f"WARNING: {self.album_name} ({self.cover_artist}) has no 'listened on' date but has a 'score'"
                 )
             self.listened_on = None
-        self.album_artwork = re.search('https?:\/\/[^"]+', album_artwork)
-        if self.album_artwork:
-            self.album_artwork = self.album_artwork.group(0)
+        self.album_artwork: Optional[str]
+        aa = re.search('https?:\/\/[^"]+', album_artwork)
+        if aa:
+            self.album_artwork = aa.group(0)
         else:
             self.album_artwork = None
             eprint(
@@ -188,41 +188,47 @@ class album:
             )
         self.discogs_url = discogs_url if discogs_url.strip() else None
 
-        self.reason_id = reasons_table.add_comma_separated_list(reasons)
-        self.genre_id = genres_table.add_comma_separated_list(genres)
-        self.style_id = styles_table.add_comma_separated_list(styles)
+        self.reason_id: List[int] = ctx.reasons_table.add_comma_separated_list(reasons)
+        self.genre_id: List[int] = ctx.genres_table.add_comma_separated_list(genres)
+        self.style_id: List[int] = ctx.styles_table.add_comma_separated_list(styles)
 
         # loop over both main and other artists
-        self.main_artists = []
-        self.other_artists = []
-        for (artist_list, celled_list) in ((self.main_artists, main_artists), (self.other_artists, credits)):
+        self.main_artists: List[str] = []
+        self.other_artists: List[str] = []
+        for (artist_list, celled_list) in (
+            (self.main_artists, main_artists),
+            (self.other_artists, credits),
+        ):
             # from the google sheet, like 4934|439434|9293011
             for artist_id in celled_list.strip().split("|"):
                 artist_id = artist_id.strip()
                 if len(artist_id) > 0:
-                    if artist_id not in artist_cache:
+                    if artist_id not in ctx.artist_cache:
                         # download name so we can get it from cache later
-                        artist_cache.get(artist_id)
+                        ctx.artist_cache.get(artist_id)
                     artist_list.append(artist_id)
 
 
-def statements(albums, use_score, base_table_file, statement_file):
-    global artist_cache
-    global reasons_table
-    global styles_table
-    global genres_table
-    artist_cache.update_yaml_file()
+def statements(
+    albums: List[album],
+    *,
+    use_score: bool,
+    base_table_file: str,
+    statement_file: str,
+    ctx: Context,
+) -> None:
+
+    ctx.artist_cache.update_yaml_file()
 
     statements = []  # SQL statements that would add data to the database
 
     # create artist SQL statements
-
     indexed_artists = {}
 
-    for index, artist in enumerate(iter(artist_cache), 1):
+    for index, artist in enumerate(iter(ctx.artist_cache), 1):
         indexed_artists[index] = {
             "discogs_url": "https://www.discogs.com/artist/{}".format(artist),
-            "name": artist_cache.items[artist],
+            "name": ctx.artist_cache.items[artist],
         }
 
     for index, vals in indexed_artists.items():
@@ -305,9 +311,9 @@ def statements(albums, use_score, base_table_file, statement_file):
     # create style/genre/reason surrogate ids
 
     for (table_name, table) in [
-        ("Reason", reasons_table),
-        ("Genre", genres_table),
-        ("Style", styles_table),
+        ("Reason", ctx.reasons_table),
+        ("Genre", ctx.genres_table),
+        ("Style", ctx.styles_table),
     ]:
         for (
             description,
@@ -325,12 +331,12 @@ def statements(albums, use_score, base_table_file, statement_file):
     # add values to style/genre/reason intersection tables
 
     for index, a in indexed_albums.items():  # for each album
-        for short_name, table in [
+        for short_name, type_ids in [
             ("Reason", a.reason_id),
             ("Genre", a.genre_id),
             ("Style", a.style_id),
         ]:  #  for each descriptor
-            for id in table:  # for each id this album has for this descriptor
+            for id in type_ids:  # for each id this album has for this descriptor
                 statements.append(
                     "INSERT INTO Album{short_name} (AlbumID, {short_name}ID) VALUES ({album_id}, {id});".format(
                         short_name=short_name, album_id=index, id=id
@@ -348,16 +354,7 @@ def statements(albums, use_score, base_table_file, statement_file):
             g.write("{}\n".format(line))
 
 
-global_warning = "Can't call create_statments more than once per python process, easiest to use the CLI interface and call this through 'nextalbums create-sql-statements'"
-
-
 def create_statments(use_scores: bool) -> None:
-    global artist_cache
-    global reasons_table
-    global styles_table
-    global genres_table
-
-    assert reasons_table is None, global_warning
 
     artist_cache_filepath = sql_datafile("artist_cache.yaml")
     score_artist_cache_filepath = sql_datafile("score_artist_cache.yaml")
@@ -377,30 +374,39 @@ def create_statments(use_scores: bool) -> None:
         eprint("Loading base artist cache...")
         artist_cache = APICache(artist_cache_filepath)
 
-    reasons_table = autoincrement_analog()
-    genres_table = autoincrement_analog()
-    styles_table = autoincrement_analog()
-
     tables_file = sql_datafile("base_tables.sql")
     output_file = sql_datafile("statements.sql")
     score_tables_file = sql_datafile("score_base_tables.sql")
     score_output_file = sql_datafile("score_statements.sql")
+
+    ctx = Context(
+        artist_cache=artist_cache,
+        reasons_table=AutoIncrementAnalog(),
+        genres_table=AutoIncrementAnalog(),
+        styles_table=AutoIncrementAnalog(),
+    )
 
     if bool(values) is False:
         eprint("No values returned from Google API")
         sys.exit(1)
     else:
         if use_scores:
-            albums = [album(list(val)) for val in values[1:]]
-            statements(albums, True, score_tables_file, score_output_file)
+            albums = [album(list(val), ctx=ctx) for val in values[1:]]
+            statements(
+                albums,
+                use_score=True,
+                base_table_file=score_tables_file,
+                statement_file=score_output_file,
+                ctx=ctx,
+            )
         else:
-            # row[5] is the reason
-            values = [
-                row
-                for row in values[1:]
-                if not set(
-                    map(lambda s: s.lower(), re.split("\s*,\s*", row[5]))
-                ).issubset(set(["manual", "relation", "recommendation"]))
+            albums = [
+                album(list(val), ctx=ctx) for val in filter_personal_reasons(values)
             ]
-            albums = [album(list(val)) for val in values]
-            statements(albums, False, tables_file, output_file)
+            statements(
+                albums,
+                use_score=False,
+                base_table_file=tables_file,
+                statement_file=output_file,
+                ctx=ctx,
+            )

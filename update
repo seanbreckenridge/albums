@@ -19,9 +19,9 @@ nextalbums generate-csv
 echo "Creating SQL statements..."
 nextalbums create-sql-statements
 nextalbums create-sql-statements -s
-echo "Updating albums..."
+echo "Updating albums SQL data..."
 mysql -u "${MYSQL_DATABASE_USERNAME}" -p"${MYSQL_DATABASE_PASSWORD}" <./sql_data/statements.sql
-echo "Updating scorealbums..."
+echo "Updating scorealbums SQL data..."
 mysql -u "${MYSQL_DATABASE_USERNAME}" -p"${MYSQL_DATABASE_PASSWORD}" <./sql_data/score_statements.sql
-echo "Updating src csv files..."
+echo "Updating csv_data files..."
 nextalbums update-csv-datafiles

@@ -5,6 +5,12 @@ from typing import Any, List
 
 import click
 
+WorksheetValue = Any
+WorksheetRow = List[WorksheetValue]
+WorksheetData = List[WorksheetRow]
+
+eprint = partial(click.echo, err=True)
+
 # vendorized from stdlib to work in under python3.9
 def cache(user_function):
     'Simple lightweight unbounded cache.  Sometimes called "memoize".'
@@ -26,8 +32,22 @@ def split_comma_separated(comma_separated: str) -> List[str]:
     return return_names
 
 
-WorksheetValue = Any
-WorksheetRow = List[WorksheetValue]
-WorksheetData = List[WorksheetRow]
+PERSONAL = set(["manual", "relation", "recommendation"])
 
-eprint = partial(click.echo, err=True)
+
+def _is_personal(data: str) -> bool:
+    return set(map(str.lower, re.split(r"\s*,\s*", data))).issubset(PERSONAL)
+
+
+def filter_personal_reasons(
+    data: WorksheetData, strip_header: bool = True
+) -> WorksheetData:
+    """
+    Remove any albums from the data I may have listened to because I wanted to,
+    on a recommendation or relation
+    """
+    if strip_header:
+        values = data[1:]
+    else:
+        values = data
+    return [row for row in values if not _is_personal(row[5])]

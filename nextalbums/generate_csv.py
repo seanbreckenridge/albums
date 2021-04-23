@@ -4,17 +4,12 @@ import csv
 from typing import TextIO
 
 from .core_gsheets import get_values
+from .common import filter_personal_reasons
 
 
 def write_to_csv_file(buf: TextIO) -> None:
-    values = get_values(sheetRange="Music!A2:L", valueRenderOption="FORMULA")
-    values = [
-        row
-        for row in values
-        if not set(map(lambda s: s.lower(), re.split("\s*,\s*", row[5]))).issubset(
-            set(["manual", "relation", "recommendation"])
-        )
-    ]
+    values = get_values(sheetRange="Music!A1:L", valueRenderOption="FORMULA")
+    values = filter_personal_reasons(values)
     csv_writer = csv.writer(buf, quoting=csv.QUOTE_ALL)
     max_row_len = max(map(len, values))
     for row in values:
