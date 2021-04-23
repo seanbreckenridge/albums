@@ -5,12 +5,13 @@
 # to be sorted before running this
 
 set -u
+set -e
 
 THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-cd "${THIS_DIR}" || exit 1
+cd "${THIS_DIR}"
 
 # settings.py prints eval-able output
-eval "$(python3 settings.py)" || exit $?
+eval "$(python3 settings.py)"
 
 echo "Reminder: Run 'nextalbums discogs-update' and sort the spreadsheet online by Year, then Album Name"
 echo "Generating csv..."
@@ -18,9 +19,9 @@ nextalbums generate-csv
 echo "Creating SQL statements..."
 nextalbums create-sql-statements
 nextalbums create-sql-statements -s
-echo "updating albums..."
+echo "Updating albums..."
 mysql -u "${MYSQL_DATABASE_USERNAME}" -p"${MYSQL_DATABASE_PASSWORD}" <./sql_data/statements.sql
-echo "updating scorealbums..."
+echo "Updating scorealbums..."
 mysql -u "${MYSQL_DATABASE_USERNAME}" -p"${MYSQL_DATABASE_PASSWORD}" <./sql_data/score_statements.sql
 echo "Updating src csv files..."
 nextalbums update-csv-datafiles
