@@ -131,7 +131,7 @@ def quote(input_str):
     return "'{}'".format(input_str)
 
 
-class album:
+class Album:
     """data for each album"""
 
     def __init__(self, vals: List[Any], *, ctx: Context):
@@ -210,7 +210,7 @@ class album:
 
 
 def statements(
-    albums: List[album],
+    albums: List[Album],
     *,
     use_score: bool,
     base_table_file: str,
@@ -315,10 +315,8 @@ def statements(
         ("Genre", ctx.genres_table),
         ("Style", ctx.styles_table),
     ]:
-        for (
-            description,
-            index,
-        ) in table.keymap.items():  # for each index, description surrogate key pair
+        # for each index, description surrogate key pair
+        for (description, index) in table.keymap.items():
             statements.append(
                 "INSERT INTO {tbl_name} ({id_column_name}, Description) VALUES ({id}, {desc});".format(
                     tbl_name=table_name,
@@ -329,12 +327,11 @@ def statements(
             )
 
     # add values to style/genre/reason intersection tables
-
-    for index, a in indexed_albums.items():  # for each album
+    for index, album in indexed_albums.items():  # for each album
         for short_name, type_ids in [
-            ("Reason", a.reason_id),
-            ("Genre", a.genre_id),
-            ("Style", a.style_id),
+            ("Reason", album.reason_id),
+            ("Genre", album.genre_id),
+            ("Style", album.style_id),
         ]:  #  for each descriptor
             for id in type_ids:  # for each id this album has for this descriptor
                 statements.append(
@@ -359,7 +356,7 @@ def create_statments(use_scores: bool) -> None:
     artist_cache_filepath = sql_datafile("artist_cache.yaml")
     score_artist_cache_filepath = sql_datafile("score_artist_cache.yaml")
 
-    values = get_values(sheetRange="A1:L", valueRenderOption="FORMULA")
+    values = get_values(sheetRange="A2:L", valueRenderOption="FORMULA")
 
     if use_scores:
         # add items that may have been added to the base cache to prevent duplicate API calls
@@ -391,7 +388,7 @@ def create_statments(use_scores: bool) -> None:
         sys.exit(1)
     else:
         if use_scores:
-            albums = [album(list(val), ctx=ctx) for val in values[1:]]
+            albums = [Album(list(val), ctx=ctx) for val in values]
             statements(
                 albums,
                 use_score=True,
@@ -401,7 +398,7 @@ def create_statments(use_scores: bool) -> None:
             )
         else:
             albums = [
-                album(list(val), ctx=ctx) for val in filter_personal_reasons(values)
+                Album(list(val), ctx=ctx) for val in filter_personal_reasons(values)
             ]
             statements(
                 albums,
