@@ -51,7 +51,7 @@ Four of those commands are related to updating the data files here:
 - `nextalbums update-csv-datafiles` queries the live SQL instance to update the files in [`csv_data`](./csv_data)
 - `nextalbums create-sql-statements` uses the data from the spreadsheet to generate a `.sql` file, which when run creates the schema above. The [`sql_data/score_statements.sql`](sql_data/score_statements.sql) file contains all the data for my scores/listen on date, so I can query all that info through SQL. See below for example queries.
 
-This entire process is managed by me using `./update`, which calls those in the required order to update all the data here
+This entire process is managed by me using [`./update`](./update), which calls those in the required order to update all the data here
 
 `nextalbums favorites` is a small script that queries my favorite albums using the live SQL instance
 
