@@ -14,6 +14,7 @@ from .common import WorksheetData, split_comma_separated
 from .create_sql_statements import sql_datafile
 from .common import cache
 
+CANT_FIND = "cant find"
 
 class Artist(NamedTuple):
     artist_id: int
@@ -93,8 +94,8 @@ def export_data(
         except:
             # couldn't parse, probably havent listened to this yet
             # edge case, where I can't find an album online
-            if score == "cant find":
-                note = score
+            if score == CANT_FIND:
+                note = CANT_FIND
         try:
             iyear = int(year)
         except ValueError as e:
