@@ -18,6 +18,8 @@ None of these sources are particularly perfect or complete, but they make me to 
 
 This contains code to interact with my [spreadsheet](https://sean.fish/s/albums) -- listing the next albums I should listen to, validating the data using the Discogs API, or creating a SQL schema with the data
 
+![](./.github/images/albums.png)
+
 If you just want the data, see [`csv_data`](./csv_data) and [`sql_data`](./sql_data) for the sources/data. [`spreadsheets.csv`](./spreadsheet.csv) can be used to make your own spreadsheet, [`sql_data/score_statements.sql`](sql_data/score_statements.sql) is similar to that for SQL. I update these files periodically, whenever I update my own spreadsheet
 
 ![](./.github/images/diagram.png)
