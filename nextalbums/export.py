@@ -20,8 +20,12 @@ class Artist(NamedTuple):
     artist_name: Optional[str]
 
 
+Note = str
+
+
 class Album(NamedTuple):
     score: Optional[float]
+    note: Optional[Note]  # .e.g some reason I couldn't listen to an album, cant find it
     listened_on: Optional[datetime.date]
     album_name: str
     album_artwork_url: str
@@ -83,10 +87,14 @@ def export_data(
             credits,
         ) = list(map(str.strip, map(str, vals)))
         fscore: Optional[float] = None
+        note: Optional[str] = None
         try:
             fscore = float(score)
         except:
-            pass  # couldn't parse, probably havent listened to this yet
+            # couldn't parse, probably havent listened to this yet
+            # edge case, where I can't find an album online
+            if score == "cant find":
+                note = score
         try:
             iyear = int(year)
         except ValueError as e:
@@ -134,6 +142,7 @@ def export_data(
 
         yield Album(
             score=fscore,
+            note=note,
             album_name=album_name,
             cover_artists=artists_on_album_cover,
             year=iyear,
@@ -171,6 +180,7 @@ def read_dump(p: Path) -> Iterator[Album]:
             dlistened_on = datetime.date(year=d.tm_year, month=d.tm_mon, day=d.tm_mday)
         yield Album(
             score=fscore,
+            note=blob["note"],
             album_name=blob["album_name"],
             cover_artists=blob["cover_artists"],
             year=int(blob["year"]),
