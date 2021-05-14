@@ -118,6 +118,19 @@ $ nextalbums print-next
     },
 ```
 
+I use that as part of [HPI](https://github.com/seanbreckenridge/HPI/blob/master/my/albums.py), which lets me use its query interface:
+
+```bash
+$ hpi query my.albums.history \
+  | jq -r '.[] | select(.score>=9) | "\(.album_name) - \(.cover_artists)"' \
+  | head -n5
+Paranoid - Black Sabbath
+Untitled - Led Zeppelin
+The Stranger - Billy Joel
+Solid State Survivor - Yellow Magic Orchestra
+The Wall - Pink Floyd
+```
+
 ### Sources for `spreadsheet.csv`:
 
 Note for '1001 Albums You Must Hear Before You Die' and 'Rolling Stone's 500 Greatest Albums of All Time', the number of albums is above 1001 and 500 respectively, as there have been multiple versions of the book, and I've included anything that was ever on the list.
