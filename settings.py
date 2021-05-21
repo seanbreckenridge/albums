@@ -29,8 +29,7 @@ if os.path.exists(discogs_data_file):
 CLIENT_SECRET_FILE = os.path.join(this_dir, "client_secret.json")
 
 CREDENTIALS_DIR = os.path.join(os.path.expanduser("~"), ".credentials")
-if not os.path.exists(CREDENTIALS_DIR):
-    os.makedirs(CREDENTIALS_DIR)
+os.makedirs(CREDENTIALS_DIR, exist_ok=True)
 
 CREDENTIALS_PATH = os.path.join(
     CREDENTIALS_DIR, "sheets.googleapis.com-python-nextalbums.json"
