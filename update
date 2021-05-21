@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Does upkeep, run discogs_update.py before running this.
+# Does upkeep, run 'nextalbums discogs-update' before running this.
 # Not including that here because the spreadsheet needs
 # to be sorted before running this
 
