@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -u
+set -e
+
+THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+cd "${THIS_DIR}"
+
+# settings.py prints eval-able output
+eval "$(python3 settings.py)"
+
+echo "Running discogs-update..."
+nextalbums discogs-update "$@"
+echo "Generating csv..."
+nextalbums generate-csv
+echo "Updating csv_data files..."
+nextalbums update-csv-datafiles
