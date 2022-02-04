@@ -21,8 +21,8 @@ def write_csv(name: str, results: WorksheetData, *, key: Optional[str] = None) -
         csv_writer = csv.writer(reason_file, quoting=csv.QUOTE_ALL)
         for row in results:
             padded = row + [""] * (max_row_len - len(row))
-            # remove score/listened on rows
-            rrow = [v for i, v in enumerate(padded) if i not in {0, 4}]
+            # remove score/listened on, image rows
+            rrow = [v for i, v in enumerate(padded) if i not in {0, 4, 6}]
             csv_writer.writerow(rrow)
 
 
@@ -49,9 +49,11 @@ def _filter_by_descriptor(
 
 
 def update_datafiles():
-
     values = get_values(sheetRange="Music!A2:K", valueRenderOption="FORMULA")
     albums = list(export_data(data_source=values, remove_header=False))
+    for a in albums:
+        if isinstance(a, Exception):
+            raise a
 
     for key in {"reasons"}:
         for descriptor in _iter_descriptor(albums, key):

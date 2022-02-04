@@ -146,7 +146,9 @@ class Album(NamedTuple):
                 return parsed
         return date(year=self.year, month=1, day=1)
 
+
 SEPERATORS = {";", "|"}
+
 
 def _split_separated(data: str) -> List[str]:
     parts: List[str] = []
