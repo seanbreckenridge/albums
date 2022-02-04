@@ -20,7 +20,7 @@ None of these sources are particularly perfect or complete, but they make me to 
 
 This contains code to interact with my [spreadsheet](https://sean.fish/s/albums) -- listing the next albums I should listen to, validating the data using the Discogs API
 
-An older version of this repo is pushed to [`albums_old`](https://github.com/seanbreckenridge/albums_old) -- became difficult to maintain due to size concerns/constantly syncing changes to giant SQL files
+An older version of this repo is pushed to [`albums_old`](https://github.com/seanbreckenridge/albums_old) -- became difficult to maintain due to size concerns/constantly syncing changes to giant SQL files. This maintains a request cache instead, using [`url_cache`](https://github.com/seanbreckenridge/url_cache)
 
 ![](./.github/images/albums.png)
 
