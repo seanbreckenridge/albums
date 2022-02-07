@@ -121,6 +121,15 @@ def _escape_title(title: str) -> str:
     return title
 
 
+def _discogs_image(album: Album) -> str | None:
+    for d in album.datas():
+        if image_list := d.get("images"):
+            assert isinstance(image_list, list)
+            for d in image_list:
+                return '=IMAGE("{}")'.format(d["uri"])
+    return None
+
+
 def discogs_update_info(info: AlbumInfo, album: Album) -> AlbumInfo:
     """Gets values from discogs API and prompts the user to confirm changes."""
 
@@ -142,11 +151,8 @@ def discogs_update_info(info: AlbumInfo, album: Album) -> AlbumInfo:
 
     new_info.year = str(album.release_date().year)
 
-    for d in album.datas():
-        if image_list := d.get("images"):
-            assert isinstance(image_list, list)
-            for d in image_list:
-                new_info.album_artwork = '=IMAGE("{}")'.format(d["uri"])
+    if img_cell := _discogs_image(album):
+        new_info.album_artwork = img_cell
     else:
         new_info.album_artwork = info.album_artwork
 
