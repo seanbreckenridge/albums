@@ -143,9 +143,10 @@ def discogs_update_info(info: AlbumInfo, album: Album) -> AlbumInfo:
     new_info.year = str(album.release_date().year)
 
     for d in album.datas():
-        if thumb := d.get("thumb"):
-            new_info.album_artwork = '=IMAGE("{}")'.format(thumb)
-            break
+        if image_list := d.get("images"):
+            assert isinstance(image_list, list)
+            for d in image_list:
+                new_info.album_artwork = '=IMAGE("{}")'.format(d["uri"])
     else:
         new_info.album_artwork = info.album_artwork
 
