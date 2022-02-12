@@ -130,7 +130,7 @@ def _discogs_image(album: Album) -> str | None:
     return None
 
 
-def discogs_update_info(info: AlbumInfo, album: Album) -> AlbumInfo:
+def discogs_update_info(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
     """Gets values from discogs API and prompts the user to confirm changes."""
 
     new_info = replace(info)  # copy dataclass
@@ -149,12 +149,14 @@ def discogs_update_info(info: AlbumInfo, album: Album) -> AlbumInfo:
         [_fix_artist_name(artist["name"]) for artist in metadata["artists"]]
     )
 
-    new_info.year = str(album.release_date().year)
+    if isinstance(album, Album):
+        new_info.year = str(album.release_date().year)
 
-    if img_cell := _discogs_image(album):
-        new_info.album_artwork = img_cell
-    else:
-        new_info.album_artwork = info.album_artwork
+    if isinstance(album, Album):
+        if img_cell := _discogs_image(album):
+            new_info.album_artwork = img_cell
+        else:
+            new_info.album_artwork = info.album_artwork
 
     new_info.genres = "; ".join(sorted(set(metadata.get("genres", []))))
     new_info.styles = "; ".join(sorted(set(metadata.get("styles", []))))
@@ -163,7 +165,7 @@ def discogs_update_info(info: AlbumInfo, album: Album) -> AlbumInfo:
     return new_info
 
 
-def non_discogs_update(info: AlbumInfo, album: Album) -> AlbumInfo:
+def non_discogs_update(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
     new_info = replace(info)  # copy dataclass
     new_info.genres = "; ".join(_split_separated(info.genres))
     new_info.styles = "; ".join(_split_separated(info.styles))
@@ -172,7 +174,7 @@ def non_discogs_update(info: AlbumInfo, album: Album) -> AlbumInfo:
     return new_info
 
 
-def upkeep(info: AlbumInfo, album: Album) -> AlbumInfo:
+def upkeep(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
     new_info = replace(info)  # copy dataclass
     new_info.reason = "; ".join(_split_separated(info.reason))
 
@@ -180,7 +182,7 @@ def upkeep(info: AlbumInfo, album: Album) -> AlbumInfo:
     return new_info
 
 
-def update_row(info: AlbumInfo, album: Album, *, resolve: bool) -> AlbumInfo:
+def update_row(info: AlbumInfo, album: Album | Exception, *, resolve: bool) -> AlbumInfo:
     """Updates with Discogs data if necessary."""
     if info.has_discogs_link():  # if this has a discogs link
         info.discogs_url = _fix_discogs_link(info.discogs_url, resolve)
@@ -196,16 +198,14 @@ def updates(values: WorksheetData, resolve: bool) -> WorksheetData:
     header = values.pop(0)
     all_links: Set[str] = set()
 
-    albums_itr = export_data(data_source=values, remove_header=False)
-    albums: List[Album] = []
-    for a in albums_itr:
-        if isinstance(a, Exception):
-            raise a
-        albums.append(a)
+    albums: List[Album | Exception ] = list(export_data(data_source=values, remove_header=False))
 
     for index, (album, row) in enumerate(zip(albums, values, strict=True)):
         info: AlbumInfo = AlbumInfo.from_row(row)
-        if info.discogs_url:
+        if isinstance(album, Exception):
+            print(info)
+            print(album)
+        if not isinstance(album, Exception) and info.discogs_url:
             assert (
                 album.discogs_url == info.discogs_url
             ), f"{album.discogs_url} != {info.discogs_url}"

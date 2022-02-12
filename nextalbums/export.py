@@ -1,5 +1,6 @@
 import json
 import re
+import warnings
 from datetime import date, datetime
 from time import strptime
 from pathlib import Path
@@ -241,10 +242,8 @@ def export_data(
         if artwork_matches:
             artwork = artwork_matches.group(0)
         else:
-            yield RuntimeError(
-                f"Warning. No Album Artwork extracted from '{album_artwork}' for '{album_name}'"
-            )
-            continue
+            artwork = ""
+            warnings.warn(f"Warning. No Album Artwork extracted from '{album_artwork}' for '{album_name}'")
 
         main_artists = [int(u) for u in _split_separated(martists)]
 
