@@ -203,8 +203,8 @@ def updates(values: WorksheetData, resolve: bool) -> WorksheetData:
     for index, (album, row) in enumerate(zip(albums, values, strict=True)):
         info: AlbumInfo = AlbumInfo.from_row(row)
         if isinstance(album, Exception):
-            print(info)
-            print(album)
+            eprint(info)
+            eprint(album)
         if not isinstance(album, Exception) and info.discogs_url:
             assert (
                 album.discogs_url == info.discogs_url
