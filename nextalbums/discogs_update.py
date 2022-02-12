@@ -152,6 +152,8 @@ def discogs_update_info(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
     if isinstance(album, Album):
         new_info.year = str(album.release_date().year)
 
+    # TODO: use discogs URL to create a dummy album so this can use .datas() without already being validated by the Album.from_blob?
+    # otherwise I have to run discogs-update twice to fetch the album art
     if isinstance(album, Album):
         if img_cell := _discogs_image(album):
             new_info.album_artwork = img_cell
