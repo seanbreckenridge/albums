@@ -104,7 +104,7 @@ $ nextalbums print-next
 }
 ```
 
-I use that as part of [HPI](https://github.com/seanbreckenridge/HPI/blob/master/my/nextalbums.py), which lets me use its query interface:
+I use that as part of my personal [HPI](https://github.com/seanbreckenridge/HPI-personal) modules, which lets me use its query interface:
 
 ```bash
 $ hpi query 'my.nextalbums.history' \
