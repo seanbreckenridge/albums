@@ -3,7 +3,6 @@
 set -u
 set -e
 
-
 THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 cd "${THIS_DIR}"
 

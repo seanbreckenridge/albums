@@ -243,7 +243,9 @@ def export_data(
             artwork = artwork_matches.group(0)
         else:
             artwork = ""
-            warnings.warn(f"Warning. No Album Artwork extracted from '{album_artwork}' for '{album_name}'")
+            warnings.warn(
+                f"Warning. No Album Artwork extracted from '{album_artwork}' for '{album_name}'"
+            )
 
         main_artists = [int(u) for u in _split_separated(martists)]
 

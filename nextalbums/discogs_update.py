@@ -184,7 +184,9 @@ def upkeep(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
     return new_info
 
 
-def update_row(info: AlbumInfo, album: Album | Exception, *, resolve: bool) -> AlbumInfo:
+def update_row(
+    info: AlbumInfo, album: Album | Exception, *, resolve: bool
+) -> AlbumInfo:
     """Updates with Discogs data if necessary."""
     if info.has_discogs_link():  # if this has a discogs link
         info.discogs_url = _fix_discogs_link(info.discogs_url, resolve)
@@ -200,7 +202,9 @@ def updates(values: WorksheetData, resolve: bool) -> WorksheetData:
     header = values.pop(0)
     all_links: Set[str] = set()
 
-    albums: List[Album | Exception ] = list(export_data(data_source=values, remove_header=False))
+    albums: List[Album | Exception] = list(
+        export_data(data_source=values, remove_header=False)
+    )
 
     for index, (album, row) in enumerate(zip(albums, values, strict=True)):
         info: AlbumInfo = AlbumInfo.from_row(row)
