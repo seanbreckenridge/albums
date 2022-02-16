@@ -3,10 +3,6 @@ import os
 import click
 
 from . import SETTINGS
-from .generate_table import generate_table
-from .discogs_update import update_new_entries
-from .update_datafiles import update_datafiles, write_to_spreadsheets_csv_file
-from .export import export_data, dump_results
 from .common import eprint
 
 
@@ -26,6 +22,8 @@ def main(ctx: click.Context) -> None:
 @click.option("-r", "--random", is_flag=True, default=False, help="Print random albums")
 def print_next(count: int, random: bool) -> None:
     """Print the next albums I should listen to"""
+    from .generate_table import generate_table
+
     click.echo(generate_table(count, random))
 
 
@@ -39,6 +37,8 @@ def print_next(count: int, random: bool) -> None:
 )
 def export(raise_errors: bool) -> None:
     """Parse and print all of the information from the spreadsheet as JSON"""
+    from .export import export_data, dump_results
+
     items = []
     for res in export_data():
         if isinstance(res, Exception):
@@ -65,6 +65,8 @@ def discogs_update(_resolve: bool) -> None:
 
     Gets information from the Discogs API
     """
+    from .discogs_update import update_new_entries
+
     updated: int = update_new_entries(_resolve)
     eprint(f"Updated {updated} cells")
 
@@ -72,12 +74,16 @@ def discogs_update(_resolve: bool) -> None:
 @main.command(short_help="update csv datafiles")
 def update_csv_datafiles() -> None:
     """Updates the CSV files in data directory"""
+    from .update_datafiles import update_datafiles
+
     update_datafiles()
 
 
 @main.command(short_help="update spreadsheet.csv")
 def generate_csv() -> None:
     """Generate the spreadsheet.csv file in the root dir"""
+    from .update_datafiles import write_to_spreadsheets_csv_file
+
     with open(SETTINGS.BASE_SPREADSHEETS_CSV_FILE, "w") as f:
         write_to_spreadsheets_csv_file(f)
     sfile = SETTINGS.BASE_SPREADSHEETS_CSV_FILE
