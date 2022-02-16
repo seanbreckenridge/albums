@@ -3,6 +3,7 @@
 set -u
 set -e
 
+
 THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 cd "${THIS_DIR}"
 
@@ -15,3 +16,5 @@ echo "Generating csv..."
 nextalbums generate-csv
 echo "Updating csv_data files..."
 nextalbums update-csv-datafiles
+
+hash dos2unix && fd .csv --type f -X dos2unix
