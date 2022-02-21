@@ -61,10 +61,10 @@ class AlbumInfo:
 def _fix_discogs_link(link: str, resolve: bool) -> str:
     """Removes unnecessary parts of Discogs URLs"""
     urlparse_path = urlparse(link).path
-    if master_id := re.search("\/master\/(?:view\/)?(\d+)", urlparse_path):
+    if master_id := re.search(r"\/master\/(?:view\/)?(\d+)", urlparse_path):
         return "https://www.discogs.com/master/{}".format(master_id.groups()[0])
     else:  # if there is no master id
-        if release_id := re.search("\/release\/(?:view\/)?(\d+)", urlparse_path):
+        if release_id := re.search(r"\/release\/(?:view\/)?(\d+)", urlparse_path):
             if resolve:
                 release_match = release_id.groups()[0]
                 eprint(f"Attempting to resolve release {release_match} to master.")

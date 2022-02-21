@@ -13,4 +13,4 @@ root_dir: str = path.abspath(path.join(this_dir, path.pardir))
 
 sys.path.insert(0, root_dir)
 
-import settings as SETTINGS
+import settings as SETTINGS  # noqa

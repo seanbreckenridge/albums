@@ -60,7 +60,7 @@ class Album(NamedTuple):
 
     def master(self) -> Json:
         assert self.discogs_url is not None
-        _type, _id = parse_url_type(self.discogs_url)
+        _type, _ = parse_url_type(self.discogs_url)
         assert _type == "master"
         return fetch_discogs(self.discogs_url).metadata
 
@@ -73,7 +73,7 @@ class Album(NamedTuple):
 
     def release(self) -> Json:
         assert self.discogs_url is not None
-        _type, _id = parse_url_type(self.discogs_url)
+        _type, _ = parse_url_type(self.discogs_url)
         if _type == "master" and self.has_master():
             release_id = self.master()["main_release"]
             main_release_url = f"https://discogs.com/release/{int(release_id)}"
@@ -198,13 +198,13 @@ def export_data(
             martists,
             genres,
             styles,
-            credits,
+            _,
         ) = list(map(str.strip, map(str, vals)))
         fscore: Optional[float] = None
         note: Optional[str] = None
         try:
             fscore = float(score)
-        except:
+        except ValueError:
             # couldn't parse, probably havent listened to this yet
             # edge case, where I can't find an album online
             if score in DROPPED:

@@ -50,14 +50,17 @@ def _filter_by_descriptor(
 
 def update_datafiles():
     values = get_values(sheetRange="Music!A2:K", valueRenderOption="FORMULA")
-    albums = list(export_data(data_source=values, remove_header=False))
-    for a in albums:
+    albums_exc = list(export_data(data_source=values, remove_header=False))
+    albums: List[Album] = []
+    for a in albums_exc:
         if isinstance(a, Exception):
             raise a
+        else:
+            albums.append(a)
 
     for key in {"reasons"}:
         for descriptor in _iter_descriptor(albums, key):
-            desc = re.sub("[\s&/]", "_", descriptor)
+            desc = re.sub(r"[\s&/]", "_", descriptor)
             rows = list(_filter_by_descriptor(values, albums, key, descriptor))
             write_csv(f"{desc}.csv", rows, key=key)
 

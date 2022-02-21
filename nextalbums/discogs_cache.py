@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 import requests
 import backoff  # type: ignore[import]
 import discogs_client  # type: ignore[import]
+from discogs_client.exceptions import HTTPError  # type: ignore[import]
 from url_cache.core import (
     URLCache,
     Summary,
@@ -39,7 +40,7 @@ def discogsClient() -> discogs_client.Client:
 
 @backoff.on_exception(
     lambda: backoff.constant(interval=10),
-    (requests.exceptions.RequestException, discogs_client.exceptions.HTTPError),
+    (requests.exceptions.RequestException, HTTPError),
     max_tries=5,
     on_backoff=backoff_hdlr,
 )
