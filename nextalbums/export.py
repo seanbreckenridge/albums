@@ -183,7 +183,7 @@ def export_data(
         worksheet_vals = worksheet_vals[1:]
     for vals in worksheet_vals:
         # pad list incase there are missing values
-        while len(vals) < 12:
+        while len(vals) < 11:
             vals.append("")
         # destructure row
         (
@@ -198,7 +198,6 @@ def export_data(
             martists,
             genres,
             styles,
-            _,
         ) = list(map(str.strip, map(str, vals)))
         fscore: Optional[float] = None
         note: Optional[str] = None

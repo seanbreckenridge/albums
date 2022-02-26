@@ -21,7 +21,7 @@ def _pad_data(row: WorksheetRow, col_count: int) -> WorksheetRow:
         row.pop(-1)
     while len(row) < col_count:
         row.append("")
-    assert len(row) == col_count
+    assert len(row) == col_count, f"{row} {col_count}"
     return row
 
 
@@ -250,7 +250,7 @@ def update_values(values, credentials):
             "values": [_pad_data(vals[1:4], 3) for vals in values],
         },
         {
-            # Album Artwork, Discogs Link, Artist ID(s), Genre, Style, Credits (ID)
+            # Reason, Album Artwork, Discogs Link, Artist ID(s), Genre, Style
             "range": "Music!F1:K{}".format(no_of_rows),
             "values": [_pad_data(vals[5:], 6) for vals in values],
         },
