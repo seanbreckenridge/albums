@@ -88,7 +88,10 @@ class DiscogsCache(URLCache):
 def discogs_urlcache() -> DiscogsCache:
     default_local = os.path.join(os.environ["HOME"], ".local", "share")
     cache_dir = os.path.join(default_local, "discogs_urlcache")
-    return DiscogsCache(cache_dir=cache_dir, sleep_time=1)
+    # refresh data every 6 weeks
+    return DiscogsCache(
+        cache_dir=cache_dir, sleep_time=1, options={"expiry_duration": "6w"}
+    )
 
 
 @cache

@@ -7,4 +7,4 @@ xlrd>=1.2.0
 click>=7.0
 simplejson
 backoff
-url_cache
+url_cache>=0.0.5
