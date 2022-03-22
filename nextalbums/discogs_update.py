@@ -116,8 +116,8 @@ TIME_DIGITS = set(string.digits + ":")
 
 
 def _escape_title(title: str) -> str:
-    if set(title).issubset(TIME_DIGITS) or "!" in title or "'" in title or '"' in title:
-        return f'=T("{title}")'
+    if set(title).issubset(TIME_DIGITS) or "'" in title:
+        return '=T("{}")'.format(title)
     return title
 
 
