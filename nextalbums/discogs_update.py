@@ -2,7 +2,7 @@ import re
 import string
 from dataclasses import dataclass, replace
 from urllib.parse import urlparse
-from typing import List, Any, Set, Dict
+from typing import List, Any, Set, Dict, Optional, Union
 from time import sleep
 
 import backoff  # type: ignore[import]
@@ -14,6 +14,8 @@ from .core_gsheets import get_credentials, get_values
 from .common import WorksheetData, WorksheetRow, eprint
 from .discogs_cache import fetch_discogs, backoff_hdlr, discogsClient
 from .export import export_data, Album, _split_separated
+
+AlbumOrErr = Union[Album, Exception]
 
 
 def _pad_data(row: WorksheetRow, col_count: int) -> WorksheetRow:
@@ -121,7 +123,7 @@ def _escape_title(title: str) -> str:
     return title
 
 
-def _discogs_image(album: Album) -> str | None:
+def _discogs_image(album: Album) -> Optional[str]:
     for d in album.datas():
         if image_list := d.get("images"):
             assert isinstance(image_list, list)
@@ -130,7 +132,7 @@ def _discogs_image(album: Album) -> str | None:
     return None
 
 
-def discogs_update_info(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
+def discogs_update_info(info: AlbumInfo, album: AlbumOrErr) -> AlbumInfo:
     """Gets values from discogs API and prompts the user to confirm changes."""
 
     new_info = replace(info)  # copy dataclass
@@ -167,7 +169,7 @@ def discogs_update_info(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
     return new_info
 
 
-def non_discogs_update(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
+def non_discogs_update(info: AlbumInfo, album: AlbumOrErr) -> AlbumInfo:
     new_info = replace(info)  # copy dataclass
     new_info.genres = "; ".join(_split_separated(info.genres))
     new_info.styles = "; ".join(_split_separated(info.styles))
@@ -176,7 +178,7 @@ def non_discogs_update(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
     return new_info
 
 
-def upkeep(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
+def upkeep(info: AlbumInfo, album: AlbumOrErr) -> AlbumInfo:
     new_info = replace(info)  # copy dataclass
     new_info.reason = "; ".join(_split_separated(info.reason))
 
@@ -185,7 +187,7 @@ def upkeep(info: AlbumInfo, album: Album | Exception) -> AlbumInfo:
 
 
 def update_row(
-    info: AlbumInfo, album: Album | Exception, *, resolve: bool
+    info: AlbumInfo, album: AlbumOrErr, *, resolve: bool
 ) -> AlbumInfo:
     """Updates with Discogs data if necessary."""
     if info.has_discogs_link():  # if this has a discogs link
@@ -202,7 +204,7 @@ def updates(values: WorksheetData, resolve: bool) -> WorksheetData:
     header = values.pop(0)
     all_links: Set[str] = set()
 
-    albums: List[Album | Exception] = list(
+    albums: List[AlbumOrErr] = list(
         export_data(data_source=values, remove_header=False)
     )
 

@@ -4,7 +4,7 @@ import warnings
 from datetime import date, datetime
 from time import strptime
 from pathlib import Path
-from typing import NamedTuple, List, Iterator, Optional, Any, Union, Dict
+from typing import NamedTuple, List, Iterator, Optional, Any, Dict, Union
 
 import xlrd  # type: ignore[import]
 import simplejson
@@ -98,7 +98,7 @@ class Album(NamedTuple):
         return _datas
 
     @staticmethod
-    def _parse_release_date(rel_raw: str | int) -> Optional[date]:
+    def _parse_release_date(rel_raw: Union[str, int]) -> Optional[date]:
         if isinstance(rel_raw, int):
             rel_raw = str(rel_raw)
         assert isinstance(rel_raw, str), f"{rel_raw} {type(rel_raw)}"
@@ -212,6 +212,9 @@ def export_data(
                 if score.strip():
                     eprint(f"Unexpected data in score field: {score} from {vals}")
         try:
+            # default to 0
+            if year == "":
+                year = "0"
             iyear = int(year)
         except ValueError as e:
             # yield the error upwards and continue parsing, instead of crashing
