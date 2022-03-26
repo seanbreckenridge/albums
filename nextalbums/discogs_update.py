@@ -1,10 +1,12 @@
+import os
 import re
 import string
 from dataclasses import dataclass, replace
 from urllib.parse import urlparse
-from typing import List, Any, Set, Dict, Optional, Union
+from typing import List, Any, Set, Dict, Optional, Union, Sequence
 from time import sleep
 
+import click
 import backoff  # type: ignore[import]
 import httplib2  # type: ignore[import]
 from googleapiclient import discovery  # type: ignore[import]
@@ -25,6 +27,20 @@ def _pad_data(row: WorksheetRow, col_count: int) -> WorksheetRow:
         row.append("")
     assert len(row) == col_count, f"{row} {col_count}"
     return row
+
+
+ALLOWED = string.ascii_letters + string.digits + " "
+
+
+def remove_image_formula(img_cell: str) -> str:
+    assert img_cell.startswith("=IMAGE(")
+    if img_cell.startswith("=IMAGE("):
+        return img_cell[7:-1].strip('"').strip("'")
+    return img_cell
+
+
+def slugify(data: str) -> str:
+    return "".join(s for s in data.strip() if s in ALLOWED).replace(" ", "_").casefold()
 
 
 @dataclass
@@ -58,6 +74,10 @@ class AlbumInfo:
             vals.append(getattr(self, f))
         assert len(vals) == 11, str(vals)
         return vals
+
+    def slugify_hash(self) -> str:
+        album_id_raw = f"{self.album} {self.artist} {self.year}"
+        return slugify(album_id_raw)
 
 
 def _fix_discogs_link(link: str, resolve: bool) -> str:
@@ -100,13 +120,15 @@ ASK_FIELDS.remove("score")
 ASK_FIELDS.remove("listened_on")
 
 
-def print_changes(old_info: AlbumInfo, new_info: AlbumInfo) -> None:
+def print_changes(old_info: AlbumInfo, new_info: AlbumInfo, ignore_fields: Sequence[str] = ()) -> None:
     """Asks the user to confirm changes resulting from discogs data."""
     printed_album_info: bool = False
     for field in ASK_FIELDS:
         old_data = getattr(old_info, field)
         new_data = getattr(new_info, field)
         if str(old_data) != str(new_data):
+            if field in ignore_fields:
+                continue
             if not printed_album_info:
                 print(f"\n{new_info}\n")
                 printed_album_info = True
@@ -123,13 +145,56 @@ def _escape_title(title: str) -> str:
     return title
 
 
+def _add_image_formula(img_url: str) -> str:
+    return f'=IMAGE("{img_url}")'
+
+
 def _discogs_image(album: Album) -> Optional[str]:
     for d in album.datas():
         if image_list := d.get("images"):
             assert isinstance(image_list, list)
             for d in image_list:
-                return '=IMAGE("{}")'.format(d["uri"])
+                return _add_image_formula(d["uri"])
     return None
+
+
+ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"]
+
+
+def _s3_proxy_image(info: AlbumInfo) -> str:
+    """
+    use s3 to reupload the image so I'm not hitting discogs cdn all the time
+    https://github.com/seanbreckenridge/s3-image-server
+
+    If user doesnt have this configured/isnt installed,
+    just return the url thats already there
+    """
+    if "INSTANCE_URL" not in os.environ:
+        return info.album_artwork
+    try:
+        from s3_image_uploader import upload_with_index
+        from s3_image_uploader.cache import has
+    except ImportError:
+        return info.album_artwork
+
+    img_url = remove_image_formula(info.album_artwork)
+    urlparse_path = urlparse(img_url).path
+    name = urlparse_path.split("/")[-1]
+    _, _, ext = name.rpartition(".")
+    assert ext.strip(), f"no extension found in {name}"
+    assert ext.casefold() in ALLOWED_EXTENSIONS, f"{ext} not in {ALLOWED_EXTENSIONS}"
+
+    target_filename = f"{info.slugify_hash()}.{ext}"
+
+    if not has(target_filename):
+        click.echo("Uploading {} {} to S3".format(target_filename, img_url))
+
+    uploaded_url = upload_with_index(
+        url=img_url,
+        target_filename=target_filename,
+    )
+
+    return _add_image_formula(uploaded_url)
 
 
 def discogs_update_info(info: AlbumInfo, album: AlbumOrErr) -> AlbumInfo:
@@ -165,7 +230,7 @@ def discogs_update_info(info: AlbumInfo, album: AlbumOrErr) -> AlbumInfo:
     new_info.genres = "; ".join(sorted(set(metadata.get("genres", []))))
     new_info.styles = "; ".join(sorted(set(metadata.get("styles", []))))
 
-    print_changes(info, new_info)
+    print_changes(info, new_info, ignore_fields=["album_artwork"])
     return new_info
 
 
@@ -182,13 +247,16 @@ def upkeep(info: AlbumInfo, album: AlbumOrErr) -> AlbumInfo:
     new_info = replace(info)  # copy dataclass
     new_info.reason = "; ".join(_split_separated(info.reason))
 
-    print_changes(info, new_info)
+    try:
+        new_info.album_artwork = _s3_proxy_image(new_info)
+    except Exception as e:
+        click.echo("Error uploading image to s3: {}".format(e), err=True)
+
+    print_changes(info, new_info, ignore_fields=["album_artwork"])
     return new_info
 
 
-def update_row(
-    info: AlbumInfo, album: AlbumOrErr, *, resolve: bool
-) -> AlbumInfo:
+def update_row(info: AlbumInfo, album: AlbumOrErr, *, resolve: bool) -> AlbumInfo:
     """Updates with Discogs data if necessary."""
     if info.has_discogs_link():  # if this has a discogs link
         info.discogs_url = _fix_discogs_link(info.discogs_url, resolve)

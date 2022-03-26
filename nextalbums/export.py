@@ -174,6 +174,8 @@ def export_data(
     data_source: Optional[WorksheetData] = None,
     remove_header: bool = True,
 ) -> Iterator[Union[Exception, Album]]:
+    from .discogs_update import remove_image_formula
+
     worksheet_vals: WorksheetData
     if data_source is None:
         worksheet_vals = get_values(sheetRange="Music!A:K", valueRenderOption="FORMULA")
@@ -240,10 +242,9 @@ def export_data(
                 )
                 continue
         artwork: str
-        artwork_matches = re.search(r"https?://[^\"]+", album_artwork)
-        if artwork_matches:
-            artwork = artwork_matches.group(0)
-        else:
+        try:
+            artwork = remove_image_formula(album_artwork)
+        except AssertionError:
             artwork = ""
             warnings.warn(
                 f"Warning. No Album Artwork extracted from '{album_artwork}' for '{album_name}'"
