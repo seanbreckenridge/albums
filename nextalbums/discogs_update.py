@@ -177,6 +177,10 @@ def _s3_proxy_image(info: AlbumInfo) -> str:
     except ImportError:
         return info.album_artwork
 
+    # if empty, dont try to upload
+    if info.album_artwork.strip() == "":
+        return info.album_artwork
+
     img_url = remove_image_formula(info.album_artwork)
     urlparse_path = urlparse(img_url).path
     name = urlparse_path.split("/")[-1]
