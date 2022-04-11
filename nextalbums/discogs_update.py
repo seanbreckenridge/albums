@@ -2,11 +2,13 @@ import os
 import re
 import string
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from urllib.parse import urlparse
 from typing import List, Any, Set, Dict, Optional, Union, Sequence
 from time import sleep
 
 import click
+import romkan  # type: ignore[import]
 import backoff  # type: ignore[import]
 import httplib2  # type: ignore[import]
 from googleapiclient import discovery  # type: ignore[import]
@@ -39,8 +41,17 @@ def remove_image_formula(img_cell: str) -> str:
     return img_cell
 
 
+SLUG_DIGITS = set(string.digits + " " + "_")
+
+
+@lru_cache(maxsize=None)
 def slugify(data: str) -> str:
-    return "".join(s for s in data.strip() if s in ALLOWED).replace(" ", "_").casefold()
+    slug = "".join(s for s in data.strip() if s in ALLOWED)
+    # if its just a date with underscores or spaces
+    if set(slug.strip()).issubset(SLUG_DIGITS):
+        # try to convert japanese text to romaji to prevent image clashes
+        slug = "".join(s for s in romkan.to_roma(data).strip() if s in ALLOWED)
+    return slug.replace(" ", "_").casefold().strip()
 
 
 @dataclass
@@ -120,7 +131,9 @@ ASK_FIELDS.remove("score")
 ASK_FIELDS.remove("listened_on")
 
 
-def print_changes(old_info: AlbumInfo, new_info: AlbumInfo, ignore_fields: Sequence[str] = ()) -> None:
+def print_changes(
+    old_info: AlbumInfo, new_info: AlbumInfo, ignore_fields: Sequence[str] = ()
+) -> None:
     """Asks the user to confirm changes resulting from discogs data."""
     printed_album_info: bool = False
     for field in ASK_FIELDS:

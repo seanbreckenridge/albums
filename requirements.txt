@@ -8,3 +8,4 @@ click>=7.0
 simplejson
 backoff
 url_cache>=0.0.5
+romkan
