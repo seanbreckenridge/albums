@@ -11,6 +11,7 @@ import click
 import romkan  # type: ignore[import]
 import backoff  # type: ignore[import]
 import httplib2  # type: ignore[import]
+from more_itertools import unique_everseen
 from googleapiclient import discovery  # type: ignore[import]
 
 from . import SETTINGS
@@ -230,7 +231,9 @@ def discogs_update_info(info: AlbumInfo, album: AlbumOrErr) -> AlbumInfo:
     assert len(metadata["artists"]) > 0, str(metadata)
     new_info.main_artist_id = _artist_ids(metadata["artists"])
     new_info.artist = ", ".join(
-        [_fix_artist_name(artist["name"]) for artist in metadata["artists"]]
+        unique_everseen(
+            (_fix_artist_name(artist["name"]) for artist in metadata["artists"])
+        )
     )
 
     if isinstance(album, Album):

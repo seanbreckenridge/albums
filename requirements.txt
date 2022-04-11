@@ -9,3 +9,4 @@ simplejson
 backoff
 url_cache>=0.0.5
 romkan
+more_itertools
