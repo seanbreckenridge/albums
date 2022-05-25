@@ -2,8 +2,8 @@ import sys
 import textwrap
 import itertools
 import random
+import shutil
 
-import click
 from prettytable import PrettyTable  # type: ignore[import]
 
 from .core_gsheets import get_values
@@ -12,7 +12,7 @@ from .common import WorksheetData, eprint
 
 def generate_table(count: int, choose_random: bool) -> str:
 
-    terminal_width, _ = click.get_terminal_size()
+    terminal_width = shutil.get_terminal_size().columns
     allow_width = terminal_width // 3
 
     text_wrapper = textwrap.TextWrapper(
