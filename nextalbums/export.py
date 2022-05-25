@@ -214,9 +214,10 @@ def export_data(
                 if score.strip():
                     eprint(f"Unexpected data in score field: {score} from {vals}")
         try:
-            # default to 0
+            # default to 1
             if year == "":
-                year = "0"
+                warnings.warn("Using '1' as default year")
+                year = "1"
             iyear = int(year)
         except ValueError as e:
             # yield the error upwards and continue parsing, instead of crashing
