@@ -87,8 +87,9 @@ def generate_csv() -> None:
     with open(SETTINGS.BASE_SPREADSHEETS_CSV_FILE, "w") as f:
         write_to_spreadsheets_csv_file(f)
     sfile = SETTINGS.BASE_SPREADSHEETS_CSV_FILE
-    if sfile.startswith(os.environ["HOME"]):
-        sfile = "~" + sfile[len(os.environ["HOME"]) :]  # noqa
+    home = os.path.expanduser("~")
+    if sfile.startswith(home):
+        sfile = "~" + sfile[len(home) :]  # noqa
     eprint(f"Wrote to {sfile} successfully.")
 
 
