@@ -210,9 +210,8 @@ def _s3_proxy_image(info: AlbumInfo) -> str:
     uploaded_url = upload_with_index(
         url=img_url,
         target_filename=target_filename,
+        use_s3_public_url=os.environ.get("USE_S3_URL"),
     )
-    if "USE_S3_URL" in os.environ:
-        return _add_image_formula(f'{os.environ["USE_S3_URL"]}/{target_filename}')
 
     return _add_image_formula(uploaded_url)
 
