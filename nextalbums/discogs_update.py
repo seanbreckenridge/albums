@@ -24,7 +24,7 @@ AlbumOrErr = Union[Album, Exception]
 
 
 def _pad_data(row: WorksheetRow, col_count: int) -> WorksheetRow:
-    while str(row[-1]).strip() == "":
+    while len(row) > 0 and str(row[-1]).strip() == "":
         row.pop(-1)
     while len(row) < col_count:
         row.append("")
@@ -211,6 +211,8 @@ def _s3_proxy_image(info: AlbumInfo) -> str:
         url=img_url,
         target_filename=target_filename,
     )
+    if "USE_S3_URL" in os.environ:
+        return _add_image_formula(f'{os.environ["USE_S3_URL"]}/{target_filename}')
 
     return _add_image_formula(uploaded_url)
 
