@@ -11,7 +11,6 @@ from .common import WorksheetData, eprint
 
 
 def generate_table(count: int, choose_random: bool) -> str:
-
     terminal_width = shutil.get_terminal_size().columns
     allow_width = terminal_width // 3
 
