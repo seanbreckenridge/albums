@@ -8,15 +8,15 @@ This started by me merging a bunch of lists of music to listen to:
 - [Rolling Stones' 500 Greatest Albums of All Time](https://www.rollingstone.com/music/music-lists/best-albums-of-all-time-1062063/)
 - [NME: 500 Greatest Albums of All Time](https://www.albumoftheyear.org/list/209-nme-the-500-greatest-albums-of-all-time/)
 - [Pitchforks Album of the Year](https://www.albumoftheyear.org/publication/1-pitchfork/lists/) (Just the Top Album)
-- Albums that have won a:
+- Albums that have won one of these awards (Pre-2023, am not sure if I'll continue to update this):
   - [Mercury Prize](https://en.wikipedia.org/wiki/Mercury_Prize)
   - [Brit Award](https://en.wikipedia.org/wiki/BRIT_Award_for_British_Album_of_the_Year)
   - [AMA](https://en.wikipedia.org/wiki/American_Music_Awards)
-  - [Grammy](https://en.wikipedia.org/wiki/Grammy_Award) (Any category)
+  - [Grammy](https://en.wikipedia.org/wiki/Grammy_Award)
 - [Fantano's Top 200 Albums of the 2010s](https://www.youtube.com/watch?v=EyMX4lcKNPg)
 - Misc. [Album Charts](./charts) that I've found to be interesting
 
-None of these sources are particularly perfect or complete, but they make me to listen to some music I otherwise may have not given a chance. Only see it as slightly better than what I used to do in the past, i.e. scrolling through streaming services and picking whatever they happen to have featured.
+None of these sources are particularly perfect or complete, but they make me to listen to some music I otherwise may have not given a chance. Only see it as slightly better than what I used to do in the past, i.e. scrolling through streaming services and picking whatever they happen to have featured. (Edit: as of now, am pretty comfortable using charts/recommendation lists to find things I'm more likely to be interested in, so will likely not update the Grammy/Mercury/AMA/Brit Awards from 2023 going forward, because I find my judgement for new music to be (slightly) better than what the award shows pick)
 
 This contains code to interact with my [spreadsheet](https://sean.fish/s/albums) -- listing the next albums I should listen to, validating the data using the Discogs API
 
