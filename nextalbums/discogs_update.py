@@ -88,7 +88,9 @@ class AlbumInfo:
         return vals
 
     def slugify_hash(self) -> str:
-        album_id_raw = f"{self.album} {self.artist} {self.year}"
+        album = romkan.to_roma(self.album)
+        artist = romkan.to_roma(self.artist)
+        album_id_raw = f"{album} {artist} {self.year}"
         return slugify(album_id_raw)
 
 
