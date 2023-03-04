@@ -15,6 +15,7 @@ __pycache__/
 /client_secret.json
 /discogs_token.*
 .prev_call
+image_data.*
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

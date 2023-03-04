@@ -2,13 +2,11 @@ import os
 import re
 import string
 from dataclasses import dataclass, replace
-from functools import lru_cache
 from urllib.parse import urlparse
 from typing import List, Any, Set, Dict, Optional, Union, Sequence
 from time import sleep
 
 import click
-import romkan  # type: ignore[import]
 import backoff  # type: ignore[import]
 import httplib2  # type: ignore[import]
 from more_itertools import unique_everseen
@@ -42,17 +40,19 @@ def remove_image_formula(img_cell: str) -> str:
     return img_cell
 
 
-SLUG_DIGITS = set(string.digits + " " + "_")
-
-
-@lru_cache(maxsize=None)
-def slugify(data: str) -> str:
-    slug = "".join(s for s in data.strip() if s in ALLOWED)
-    # if its just a date with underscores or spaces
-    if set(slug.strip()).issubset(SLUG_DIGITS):
-        # try to convert japanese text to romaji to prevent image clashes
-        slug = "".join(s for s in romkan.to_roma(data).strip() if s in ALLOWED)
+def slugify(data: str, allow_period: bool = False) -> str:
+    allow = ALLOWED + "." if allow_period else ALLOWED
+    slug = "".join(s for s in data.strip() if s in allow)
     return slug.replace(" ", "_").casefold().strip()
+
+
+def slugify_data(album: str, artist: str, year: str, discogs_url: str) -> str:
+    album_id_raw = f"{album} {artist} {year}"
+    discogs_id = ""
+    if discogs_url.strip():
+        discogs_id = discogs_url.split("/")[-1]
+        album_id_raw += f" {discogs_id}"
+    return slugify(album_id_raw)
 
 
 @dataclass
@@ -88,10 +88,7 @@ class AlbumInfo:
         return vals
 
     def slugify_hash(self) -> str:
-        album = romkan.to_roma(self.album)
-        artist = romkan.to_roma(self.artist)
-        album_id_raw = f"{album} {artist} {self.year}"
-        return slugify(album_id_raw)
+        return slugify_data(self.album, self.artist, self.year, self.discogs_url)
 
 
 def _fix_discogs_link(link: str, resolve: bool) -> str:
@@ -162,6 +159,7 @@ def _escape_title(title: str) -> str:
 
 
 def _add_image_formula(img_url: str) -> str:
+    assert isinstance(img_url, str)
     return f'=IMAGE("{img_url}")'
 
 
@@ -185,11 +183,10 @@ def _s3_proxy_image(info: AlbumInfo) -> str:
     If user doesnt have this configured/isnt installed,
     just return the url thats already there
     """
-    if "INSTANCE_URL" not in os.environ:
+    if "USE_S3_URL" not in os.environ:
         return info.album_artwork
     try:
-        from s3_image_uploader import upload_with_index
-        from s3_image_uploader.cache import has
+        from .image_proxy import proxy_image
     except ImportError:
         return info.album_artwork
 
@@ -198,24 +195,10 @@ def _s3_proxy_image(info: AlbumInfo) -> str:
         return info.album_artwork
 
     img_url = remove_image_formula(info.album_artwork)
-    urlparse_path = urlparse(img_url).path
-    name = urlparse_path.split("/")[-1]
-    _, _, ext = name.rpartition(".")
-    assert ext.strip(), f"no extension found in {name}"
-    assert ext.casefold() in ALLOWED_EXTENSIONS, f"{ext} not in {ALLOWED_EXTENSIONS}"
-
-    target_filename = f"{info.slugify_hash()}.{ext}"
-
-    if not has(target_filename):
-        click.echo("Uploading {} {} to S3".format(target_filename, img_url))
-
-    uploaded_url = upload_with_index(
-        url=img_url,
-        target_filename=target_filename,
-        use_s3_public_url=os.environ.get("USE_S3_URL"),
-    )
-
-    return _add_image_formula(uploaded_url)
+    proxied = proxy_image(img_url, info.slugify_hash(), info.discogs_url)
+    if proxied is None:
+        return info.album_artwork
+    return _add_image_formula(proxied)
 
 
 def discogs_update_info(info: AlbumInfo, album: AlbumOrErr) -> AlbumInfo:

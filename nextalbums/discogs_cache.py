@@ -94,10 +94,14 @@ def discogs_urlcache() -> DiscogsCache:
     )
 
 
-@cache
-def fetch_discogs(url: str) -> Summary:
+def _fetch_discogs(url: str, refresh: bool = False) -> Summary:
     uc = discogs_urlcache()
-    data = uc.get(url)
+    if refresh:
+        uurl = uc.preprocess_url(url)
+        data = uc.request_data(uurl)
+        uc.summary_cache.put(uurl, data)
+    else:
+        data = uc.get(url)
     _type, _id = parse_url_type(url)
     # if this is the master release, request the main release for this as well
     if _type == "master":
@@ -109,3 +113,8 @@ def fetch_discogs(url: str) -> Summary:
             eprint(f"[Discogs] Requesting main release for {_id}")
         uc.get(main_release_url)
     return data
+
+
+@cache
+def fetch_discogs(url: str) -> Summary:
+    return _fetch_discogs(url)
