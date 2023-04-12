@@ -98,8 +98,6 @@ def generate_csv() -> None:
 @click.argument("IMAGE_URL", type=str)
 def override_image_upload(album_id: str, image_url: str) -> None:
     """Override the image upload for a specific album"""
-    from pathlib import Path
-    from urllib.parse import urlparse
     from .image_proxy import (
         image_db,
         _get_image_bytes,
@@ -109,10 +107,9 @@ def override_image_upload(album_id: str, image_url: str) -> None:
     )
 
     db = image_db()
-    assert (
-        db.exists(album_id)
+    assert db.exists(
+        album_id
     ), f"Album ID {album_id} not found in database, should be the key in the JSON file"
-
 
     eprint(f"Requesting image from {image_url}")
     image_bytes = _get_image_bytes(image_url)
@@ -120,9 +117,8 @@ def override_image_upload(album_id: str, image_url: str) -> None:
         eprint(f"Could not get image bytes from {image_url}")
         return
 
-
     content_type = _get_image_content_type(image_url)
-    click.echo(f"Uploading image to S3 bucket {s3_bucket} with content type {content_type}")
+    click.echo(f"Uploading image to S3 bucket...")
     _upload_image(image_bytes, s3_bucket, album_id, content_type)
 
     assert db.set(album_id, album_id)
