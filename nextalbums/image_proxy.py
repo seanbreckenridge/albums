@@ -37,7 +37,9 @@ def setup_db() -> pickledb.PickleDB:
         pdb = pickledb.load(image_data, auto_dump=AUTO_DUMP)
     except Exception:
         assert Path(backup).exists()
-        eprint(f"image_proxy: failed to load {image_data}, restoring from backup", err=True)
+        eprint(
+            f"image_proxy: failed to load {image_data}, restoring from backup", err=True
+        )
         shutil.copy(backup, image_data)
         pdb = pickledb.load(image_data, auto_dump=AUTO_DUMP)
 
@@ -77,7 +79,35 @@ def _get_image_bytes(url: str) -> bytes | None:
         resp.raise_for_status()
         return resp.content
 
-def proxy_image(url: str, album_id: str, discogs_url: str, retry: bool = True) -> str | None:
+
+CONTENT_MAPPING = {
+    "jpeg": "image/jpg",
+    "jpg": "image/jpg",
+    "png": "image/png",
+}
+
+
+def _get_image_content_type(url: str) -> str:
+    path = urlparse(url).path
+    ext = Path(path).suffix.strip(".")
+    assert ext in {"jpeg", "jpg", "png"}, f"invalid extension {ext}"
+    return CONTENT_MAPPING[ext]
+
+
+def _upload_image(
+    image_bytes: bytes, s3_bucket: str, key: str, content_type: str
+) -> None:
+    client.upload_fileobj(
+        io.BytesIO(image_bytes),
+        Bucket=s3_bucket,
+        Key=key,
+        ExtraArgs={"ContentType": content_type},
+    )
+
+
+def proxy_image(
+    url: str, album_id: str, discogs_url: str, retry: bool = True
+) -> str | None:
     db = image_db()
     if db.exists(album_id):
         resp = db.get(album_id)
@@ -89,13 +119,7 @@ def proxy_image(url: str, album_id: str, discogs_url: str, retry: bool = True) -
         eprint(f"image_proxy: uploading {album_id} {url}", err=True)
         time.sleep(2)
         path = urlparse(url).path
-        ext = Path(path).suffix.strip(".")
-        assert ext in {"jpeg", "jpg", "png"}, f"invalid extension {ext}"
-        content_type = {
-            "jpeg": "image/jpg",
-            "jpg": "image/jpg",
-            "png": "image/png",
-        }[ext]
+        content_type = _get_image_content_type(url)
 
         # download image to memory
         image_bytes = _get_image_bytes(url)
@@ -111,15 +135,11 @@ def proxy_image(url: str, album_id: str, discogs_url: str, retry: bool = True) -
 
         # slugify path
         from .discogs_update import slugify
+
         key = slugify(path.replace("/", "_"), allow_period=True)
 
         # upload to aws s3
-        client.upload_fileobj(
-            io.BytesIO(image_bytes),
-            Bucket=s3_bucket,
-            Key=key,
-            ExtraArgs={"ContentType": content_type},
-        )
+        _upload_image(image_bytes, s3_bucket, key, content_type)
 
         assert db.set(album_id, key)
         https_url = _prefix_url(key)
