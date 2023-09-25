@@ -6,12 +6,8 @@ from time import strptime
 from pathlib import Path
 from typing import NamedTuple, List, Iterator, Optional, Any, Dict, Union
 
-import xlrd  # type: ignore[import]
-import simplejson
 
-from .core_gsheets import get_values
-from .discogs_cache import parse_url_type, fetch_discogs
-from .common import WorksheetData, eprint
+from .common import WorksheetData, eprint, parse_url_type
 
 DROPPED = set(["cant find", "nope"])
 
@@ -59,6 +55,8 @@ class Album(NamedTuple):
         return True
 
     def master(self) -> Json:
+        from .discogs_cache import fetch_discogs
+
         assert self.discogs_url is not None
         _type, _ = parse_url_type(self.discogs_url)
         assert _type == "master"
@@ -72,6 +70,8 @@ class Album(NamedTuple):
             return False
 
     def release(self) -> Json:
+        from .discogs_cache import fetch_discogs
+
         assert self.discogs_url is not None
         _type, _ = parse_url_type(self.discogs_url)
         if _type == "master" and self.has_master():
@@ -175,6 +175,9 @@ def export_data(
     remove_header: bool = True,
 ) -> Iterator[Union[Exception, Album]]:
     from .discogs_update import remove_image_formula
+    from .core_gsheets import get_values
+
+    import xlrd  # type: ignore[import]
 
     worksheet_vals: WorksheetData
     if data_source is None:
@@ -276,6 +279,8 @@ def default(o: Any) -> Any:
 
 
 def dump_results(data: Any) -> str:
+    import simplejson
+
     return str(
         simplejson.dumps(
             data,

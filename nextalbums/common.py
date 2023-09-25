@@ -1,7 +1,8 @@
 import re
 
+from urllib.parse import urlparse
 from functools import partial
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import click
 
@@ -30,3 +31,10 @@ def filter_personal_reasons(
     """
     values = data[1:] if strip_header else data
     return [row for row in values if not _is_personal(row[5])]
+
+
+def parse_url_type(uurl: str) -> Tuple[str, int]:
+    _type, _id = urlparse(uurl).path.strip("/").split("/")
+    assert _type in {"master", "release"}, str(uurl)
+    assert str(_id).isdigit(), str(uurl)
+    return _type, int(_id)

@@ -6,21 +6,18 @@ discogs API data locally
 import os
 import functools
 from functools import cache
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 from datetime import datetime
-from urllib.parse import urlparse
 
 import requests
 import backoff  # type: ignore[import]
 import discogs_client  # type: ignore[import]
 from discogs_client.exceptions import HTTPError  # type: ignore[import]
-from url_cache.core import (
-    URLCache,
-    Summary,
-)
+from url_cache.core import URLCache
+from url_cache.model import Summary
 
 from . import SETTINGS
-from .common import eprint
+from .common import eprint, parse_url_type
 
 
 def backoff_hdlr(details):
@@ -56,13 +53,6 @@ def discogs_get(_type: str, _id: int, /) -> Dict[str, Any]:
     resp.refresh()
     data = dict(resp.data)
     return data
-
-
-def parse_url_type(uurl: str) -> Tuple[str, int]:
-    _type, _id = urlparse(uurl).path.strip("/").split("/")
-    assert _type in {"master", "release"}, str(uurl)
-    assert str(_id).isdigit(), str(uurl)
-    return _type, int(_id)
 
 
 class DiscogsCache(URLCache):
