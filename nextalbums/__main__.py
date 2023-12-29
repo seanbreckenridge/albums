@@ -119,7 +119,7 @@ def _handle_album_cli(
     albums = _export_data()
 
     tagged_albums = [
-        f"{i}|{a.album_name}|{a.cover_artists}" for i, a in enumerate(albums)
+        f"{i}|{a.album_name}|{a.cover_artists}|{a.year}" for i, a in enumerate(albums)
     ]
 
     picked = FzfPrompt().prompt(
@@ -130,7 +130,14 @@ def _handle_album_cli(
     # get index from string and index into albums
     index = int(picked[0].split("|")[0])
     assert index < len(albums)
-    return albums[index]
+
+    picked_album = albums[index]
+    click.echo(
+        f"Picked {picked_album.album_name} - {picked_album.cover_artists} ({picked_album.year})",
+        err=True,
+    )
+
+    return picked_album
 
 
 today = str(date.today())
@@ -138,18 +145,11 @@ today = str(date.today())
 
 @main.command(short_help="mark album listened")
 @click.option(
-    "-s",
-    "--score",
-    type=float,
-    required=True,
-    prompt=True,
-    help="Score to give album",
-)
-@click.option(
     "-d",
     "--date",
     type=str,
     default=today,
+    show_default=True,
     help="Date to give album",
 )
 @click.option(
@@ -158,6 +158,14 @@ today = str(date.today())
     required=False,
     type=click.UNPROCESSED,
     help="Album to mark",
+)
+@click.option(
+    "-s",
+    "--score",
+    type=float,
+    required=True,
+    prompt=True,
+    help="Score to give album",
 )
 def mark_listened(album: Album, score: float, date: str) -> None:
     assert 0 <= score <= 10, "Score must be between 0 and 10"
