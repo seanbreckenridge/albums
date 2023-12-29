@@ -48,7 +48,7 @@ def _filter_by_descriptor(
             yield v
 
 
-def update_datafiles():
+def update_datafiles() -> None:
     values = get_values(sheetRange="Music!A2:K", valueRenderOption="FORMULA")
     albums_exc = list(export_data(data_source=values, remove_header=False))
     albums: List[Album] = []

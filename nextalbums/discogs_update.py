@@ -1,9 +1,11 @@
+from __future__ import annotations
 import os
 import re
 import string
+from datetime import date
 from dataclasses import dataclass, replace
 from urllib.parse import urlparse
-from typing import List, Any, Set, Dict, Optional, Union, Sequence
+from typing import List, Any, Set, Dict, Optional, Union, Sequence, TYPE_CHECKING
 from time import sleep
 
 import click
@@ -357,3 +359,128 @@ def update_new_entries(resolve: bool) -> int:
         raise SystemExit(1)
     response = update_values(values=updates(values, resolve), credentials=credentials)
     return int(response["totalUpdatedCells"])
+
+
+if TYPE_CHECKING:
+    from .export import Album
+
+
+def mark_listened(
+    album: Album, spreadsheet: WorksheetData, *, score: float, listened_on: date
+) -> None:
+    """Marks the album as listened to on the spreadsheet"""
+    change_index = None
+    for index, row in enumerate(spreadsheet):
+        if album.discogs_url == row[6] or (
+            album.album_name == row[1]
+            and album.cover_artists == row[2]
+            and album.year == row[3]
+        ):
+            row[0] = score
+            row[4] = listened_on.strftime("%Y-%m-%d")
+            change_index = index
+            break
+    else:
+        raise Exception(f"Could not find {album} in spreadsheet")
+    assert change_index is not None
+
+    credentials = get_credentials()
+    service = discovery.build(
+        "sheets", "v4", credentials=credentials, cache_discovery=False
+    )
+    update_data = [
+        {
+            # Score
+            "range": f"Music!A{change_index + 1}",
+            "values": [[score]],
+        },
+        {
+            # Listened on
+            "range": f"Music!E{change_index + 1}",
+            "values": [[listened_on.strftime("%Y-%m-%d")]],
+        },
+    ]
+
+    update_body = {
+        "valueInputOption": "USER_ENTERED",  # to allow images to display
+        "data": update_data,
+    }
+
+    request = (
+        service.spreadsheets()
+        .values()
+        .batchUpdate(spreadsheetId=SETTINGS.SPREADSHEET_ID, body=update_body)
+    )
+    request.execute()
+
+
+def add_album(discogs_url: str) -> None:
+    """
+    adds a new album to the spreadsheet
+
+    this just adds the album to the bottom of the spreadsheet
+    """
+    credentials = get_credentials()
+    service = discovery.build(
+        "sheets", "v4", credentials=credentials, cache_discovery=False
+    )
+    values = get_values(
+        credentials=credentials,
+        sheetRange="Music!A1:K",
+        valueRenderOption="FORMULA",
+        remove_escapes=False,
+    )
+
+    # check if the last row is empty. if it is, then skip adding an empty row
+    add_empty_row = "".join(map(str, values[-1])).strip() != ""
+
+    if add_empty_row:
+        eprint("Adding empty row to spreadsheet")
+
+        data = (
+            service.spreadsheets().get(spreadsheetId=SETTINGS.SPREADSHEET_ID).execute()
+        )
+        sheetId = data["sheets"][0]["properties"]["sheetId"]
+        assert isinstance(sheetId, int)
+
+        # update row count
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=SETTINGS.SPREADSHEET_ID,
+            body={
+                "requests": [
+                    {
+                        "insertDimension": {
+                            "range": {
+                                "sheetId": sheetId,
+                                "dimension": "ROWS",
+                                "startIndex": len(values),
+                                "endIndex": len(values) + 1,
+                            },
+                            "inheritFromBefore": True,
+                        }
+                    }
+                ]
+            },
+        ).execute()
+
+    update_data = [
+        {
+            # Discogs Link
+            "range": "Music!H{}".format(len(values) + 1),
+            "values": [[discogs_url]],
+        }
+    ]
+
+    update_body = {
+        "valueInputOption": "USER_ENTERED",  # to allow images to display
+        "data": update_data,
+    }
+
+    eprint(f"Adding {discogs_url} to spreadsheet")
+
+    request = (
+        service.spreadsheets()
+        .values()
+        .batchUpdate(spreadsheetId=SETTINGS.SPREADSHEET_ID, body=update_body)
+    )
+    request.execute()

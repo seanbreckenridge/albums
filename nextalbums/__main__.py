@@ -1,4 +1,7 @@
+from __future__ import annotations
 import os
+from datetime import date, datetime
+from typing import TYPE_CHECKING, Optional
 
 import click
 
@@ -93,6 +96,98 @@ def generate_csv() -> None:
     eprint(f"Wrote to {sfile} successfully.")
 
 
+if TYPE_CHECKING:
+    from .export import Album
+
+
+def _export_data() -> list[Album]:
+    from nextalbums.export import export_data
+
+    albums = [a for a in export_data() if not isinstance(a, Exception)]
+
+    if not albums:
+        raise click.BadParameter("No albums found in spreadsheet")
+
+    return albums
+
+
+def _handle_album_cli(
+    ctx: click.Context, param: click.Argument, value: Optional[str]
+) -> Album:
+    from pyfzf import FzfPrompt
+
+    albums = _export_data()
+
+    tagged_albums = [
+        f"{i}|{a.album_name}|{a.cover_artists}" for i, a in enumerate(albums)
+    ]
+
+    picked = FzfPrompt().prompt(
+        tagged_albums, "--header='Pick an album' --layout=reverse --no-multi"
+    )
+    if not picked:
+        raise click.BadParameter("No album picked")
+    # get index from string and index into albums
+    index = int(picked[0].split("|")[0])
+    assert index < len(albums)
+    return albums[index]
+
+
+today = str(date.today())
+
+
+@main.command(short_help="mark album listened")
+@click.option(
+    "-s",
+    "--score",
+    type=float,
+    required=True,
+    prompt=True,
+    help="Score to give album",
+)
+@click.option(
+    "-d",
+    "--date",
+    type=str,
+    default=today,
+    help="Date to give album",
+)
+@click.option(
+    "--album",
+    callback=_handle_album_cli,
+    required=False,
+    type=click.UNPROCESSED,
+    help="Album to mark",
+)
+def mark_listened(album: Album, score: float, date: str) -> None:
+    assert 0 <= score <= 10, "Score must be between 0 and 10"
+    # parse date to a datetime
+    from .discogs_update import mark_listened
+
+    try:
+        dt = datetime.strptime(date, "%Y-%m-%d")
+    except ValueError:
+        raise click.BadParameter("Date must be in YYYY-MM-DD format")
+
+    from .core_gsheets import get_values
+
+    worksheet_vals = get_values(sheetRange="Music!A:K", valueRenderOption="FORMULA")
+    mark_listened(album, worksheet_vals, score=score, listened_on=dt)
+
+
+@main.command(short_help="add new album")
+@click.argument("DISCOGS_URL")
+def add_album(discogs_url: str) -> None:
+    """
+    This *just* adds the URL to the spreadsheet, you'll need to run
+    nextalbums discogs-update to actually update the sheet with the data
+    """
+
+    from .discogs_update import add_album
+
+    add_album(discogs_url)
+
+
 @main.command(short_help="override image upload")
 @click.argument("ALBUM_ID", type=str)
 @click.argument("IMAGE_URL", type=str)
@@ -118,7 +213,7 @@ def override_image_upload(album_id: str, image_url: str) -> None:
         return
 
     content_type = _get_image_content_type(image_url)
-    click.echo(f"Uploading image to S3 bucket...")
+    click.echo("Uploading image to S3 bucket...")
     _upload_image(image_bytes, s3_bucket, album_id, content_type)
 
     assert db.set(album_id, album_id)

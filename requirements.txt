@@ -12,3 +12,4 @@ more_itertools
 httpx
 boto3
 pickledb
+pyfzf_iter

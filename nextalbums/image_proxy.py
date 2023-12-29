@@ -17,7 +17,6 @@ import pickledb  # type: ignore[import]
 
 
 from . import SETTINGS
-from .discogs_cache import _fetch_discogs
 from .common import eprint
 
 client = boto3.client(
