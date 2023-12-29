@@ -183,9 +183,13 @@ def add_album(discogs_url: str) -> None:
     nextalbums discogs-update to actually update the sheet with the data
     """
 
-    from .discogs_update import add_album
+    from .discogs_update import add_album, _fix_discogs_link
 
-    add_album(discogs_url)
+    fixed_url = _fix_discogs_link(discogs_url, resolve=True)
+    if fixed_url != discogs_url:
+        eprint(f"Resolved {discogs_url} to {fixed_url}")
+
+    add_album(fixed_url)
 
 
 @main.command(short_help="override image upload")
