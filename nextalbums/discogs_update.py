@@ -414,7 +414,7 @@ def mark_listened(
     request.execute()
 
 
-def add_album(discogs_url: str) -> None:
+def add_album(discogs_url: str, reason: str = "Manual") -> None:
     """
     adds a new album to the spreadsheet
 
@@ -468,7 +468,12 @@ def add_album(discogs_url: str) -> None:
             # Discogs Link
             "range": "Music!H{}".format(len(values) + 1),
             "values": [[discogs_url]],
-        }
+        },
+        {
+            # Reason
+            "range": "Music!F{}".format(len(values) + 1),
+            "values": [[reason]],
+        },
     ]
 
     update_body = {
