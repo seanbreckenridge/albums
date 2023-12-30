@@ -176,6 +176,7 @@ def _discogs_image(album: Album) -> Optional[str]:
 
 ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"]
 
+printed = False
 
 def _s3_proxy_image(info: AlbumInfo) -> str:
     """
@@ -189,7 +190,11 @@ def _s3_proxy_image(info: AlbumInfo) -> str:
         return info.album_artwork
     try:
         from .image_proxy import proxy_image
-    except ImportError:
+    except ImportError as e:
+        global printed
+        if not printed:
+            eprint(f"Could not import image_proxy, skipping image upload to s3 {e}")
+            printed = True
         return info.album_artwork
 
     # if empty, dont try to upload
