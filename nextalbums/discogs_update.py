@@ -178,6 +178,7 @@ ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"]
 
 printed = False
 
+
 def _s3_proxy_image(info: AlbumInfo) -> str:
     """
     use s3 to reupload the image so I'm not hitting discogs cdn all the time
@@ -371,7 +372,11 @@ if TYPE_CHECKING:
 
 
 def mark_listened(
-    album: Album, spreadsheet: WorksheetData, *, score: float, listened_on: date
+    album: Album,
+    spreadsheet: WorksheetData,
+    *,
+    score: float,
+    listened_on: Optional[date] = None,
 ) -> None:
     """Marks the album as listened to on the spreadsheet"""
     change_index = None
@@ -382,7 +387,9 @@ def mark_listened(
             and album.year == row[3]
         ):
             row[0] = score
-            row[4] = listened_on.strftime("%Y-%m-%d")
+            if listened_on is not None:
+                print(f"Setting listened on to {listened_on}")
+                row[4] = listened_on.strftime("%Y-%m-%d")
             change_index = index
             break
     else:
@@ -399,12 +406,16 @@ def mark_listened(
             "range": f"Music!A{change_index + 1}",
             "values": [[score]],
         },
-        {
-            # Listened on
-            "range": f"Music!E{change_index + 1}",
-            "values": [[listened_on.strftime("%Y-%m-%d")]],
-        },
     ]
+
+    if listened_on is not None:
+        update_data += [
+            {
+                # Listened on
+                "range": f"Music!E{change_index + 1}",
+                "values": [[listened_on.strftime("%Y-%m-%d")]],
+            }
+        ]
 
     update_body = {
         "valueInputOption": "USER_ENTERED",  # to allow images to display

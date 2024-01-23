@@ -1,7 +1,7 @@
 from __future__ import annotations
 import os
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union, Literal
 
 import click
 
@@ -150,7 +150,7 @@ today = str(date.today())
     type=str,
     default=today,
     show_default=True,
-    help="Date to give album",
+    help="Date to give album, pass 'no-edit' to not edit date",
 )
 @click.option(
     "--album",
@@ -172,15 +172,21 @@ def mark_listened(album: Album, score: float, date: str) -> None:
     # parse date to a datetime
     from .discogs_update import mark_listened
 
+    dt: Union[date, Literal["no-edit"]]
     try:
         dt = datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
-        raise click.BadParameter("Date must be in YYYY-MM-DD format")
+        if date == "no-edit":
+            dt = date
+        else:
+            raise click.BadParameter("Date must be in YYYY-MM-DD format")
 
     from .core_gsheets import get_values
 
     worksheet_vals = get_values(sheetRange="Music!A:K", valueRenderOption="FORMULA")
-    mark_listened(album, worksheet_vals, score=score, listened_on=dt)
+    mark_listened(
+        album, worksheet_vals, score=score, listened_on=dt if dt != "no-edit" else None
+    )
 
 
 @main.command(short_help="add new album")
